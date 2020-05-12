@@ -1,0 +1,53 @@
+## Detfauls
+
+alias wget='wget -c'
+alias lget='wget -c --limit-rate=32k'
+alias ls='ls -h --color=auto'
+alias grep='grep --color=auto'
+alias rsync='rsync -rvltpzu --progress'
+
+## shortcuts
+
+## Diagnostics
+alias tu='top -o %CPU'
+alias tm='top -o %MEM'
+alias ram='sudo dmidecode --type 17'
+alias my-ip="dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'\"' '{ print \$2}'"
+alias wscan='sudo iwlist wlp3s0 scan'
+
+
+## Directories
+
+alias cdt='cd ~/projects/jcubic/terminal/'
+alias cdl='cd ~/projects/jcubic/lips/'
+
+alias hidden='ls -sdh .*'
+
+#alias lsdir='find . -maxdepth 1 -type d'
+#alias lsexec='find . -maxdepth 1 -type e'
+
+alias ls-exec='for i in *; do test -x "$i" && test -f "$1" && green $i; done'
+alias ls-dir='for i in *; do test -d "$i" && blue $i; done'
+
+## Utils
+
+alias c-c='xclip -sel clip'
+alias c-v='xclip -o -sel clip'
+
+alias mount-iso='sudo mount -o loop -t iso9660'
+
+alias rot13='tr "A-Za-z" "N-ZA-Mn-za-m"'
+
+alias mirror='wget -rmLk -U Mozilla --domains=--wait=5 --reject-regex="pdf|jpg|gif|png"'
+
+alias slideshow='feh -xFrYZz -A slideshow -D 7 ~/Zdjecia/slideshow'
+
+alias copy='echo -n "©"'
+
+alias onsave='inotifywait -m -e close_write'
+
+alias pjson='python -mjson.tool'
+
+## Math
+alias sum='separate + | bc'
+alias product='separate * | bc'
