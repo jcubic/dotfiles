@@ -15,11 +15,11 @@ alias ram='sudo dmidecode --type 17'
 alias my-ip="dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'\"' '{ print \$2}'"
 alias wscan='sudo iwlist wlp3s0 scan'
 
-
 ## Directories
 
 alias cdt='cd ~/projects/jcubic/terminal/'
 alias cdl='cd ~/projects/jcubic/lips/'
+alias cdd='cd ~/projects/jcubic/dotfiles/'
 
 alias hidden='ls -sdh .*'
 
