@@ -4,6 +4,7 @@ alias wget='wget -c'
 alias lget='wget -c --limit-rate=32k'
 alias ls='ls -h --color=auto'
 alias grep='grep --color=auto'
+alias diff='diff --color=auto'
 alias rsync='rsync -rvltpzu --progress'
 
 ## shortcuts
@@ -51,3 +52,8 @@ alias pjson='python -mjson.tool'
 ## Math
 alias sum='separate + | bc'
 alias product='separate * | bc'
+
+## git
+
+alias first-commit='git log $(git rev-list --max-parents=0 HEAD)'
+
