@@ -26,6 +26,10 @@ function html2text() {
     /usr/bin/html2text | recode html
 }
 
+function lsq(){
+    ls -lh --full-time | tr -s ' ' | cut -d' ' -f5,9-
+}
+
 # -------------------------------------------------------
 # :: Marks
 # -------------------------------------------------------
