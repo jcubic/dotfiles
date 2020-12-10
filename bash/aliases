@@ -9,6 +9,8 @@ alias rsync='rsync -rvltpzu --progress'
 
 ## shortcuts
 
+alias lips="lips -q"
+
 ## Diagnostics
 alias tu='top -o %CPU'
 alias tm='top -o %MEM'
@@ -31,23 +33,30 @@ alias ls-exec='for i in *; do test -x "$i" && test -f "$1" && green $i; done'
 alias ls-dir='for i in *; do test -d "$i" && blue $i; done'
 
 ## Utils
-
 alias c-c='xclip -sel clip'
 alias c-v='xclip -o -sel clip'
 
 alias mount-iso='sudo mount -o loop -t iso9660'
 
-alias rot13='tr "A-Za-z" "N-ZA-Mn-za-m"'
-
+alias rot13="tr '[A-Za-z]' '[N-ZA-Mn-za-m]'"
+alias utf16="perl -pe \"BEGIN {binmode STDIN, ':encoding(utf16)'; binmodSTDOUT, ':+utf8'}\""
 alias mirror='wget -rmLk -U Mozilla --domains=--wait=5 --reject-regex="pdf|jpg|gif|png"'
 
 alias slideshow='feh -xFrYZz -A slideshow -D 7 ~/Zdjecia/slideshow'
 
 alias copy='echo -n "©"'
+alias lambda='echo -n "λ"'
 
 alias onsave='inotifywait -m -e close_write'
 
 alias pjson='python -mjson.tool'
+
+alias colorize='while read -r line;do printf "\033[38;5;%dm%s\033[0m\n" $(($RANDOM%255)) "$line";done'
+
+## System
+alias sound-settings="pavucontrol"
+alias list-sinks="pacmd list-sinks"
+alias sink-mute="pacmd set-sink-mute"
 
 ## Math
 alias sum='separate + | bc'
@@ -56,4 +65,3 @@ alias product='separate * | bc'
 ## git
 
 alias first-commit='git log $(git rev-list --max-parents=0 HEAD)'
-
