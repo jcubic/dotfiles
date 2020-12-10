@@ -1,0 +1,63 @@
+function ansi() {
+  tr '\0' ' ' < "$@" | sed 's/\x1A.*//' | iconv -f CP437; echo
+}
+
+function y() {
+    youtube-dl -c -o "%(title)s.%(ext)s" $@
+}
+
+function y-mp3() {
+    y -x --audio-format mp3 $@
+}
+
+function man() {
+    env \
+        LESS_TERMCAP_mb=$(printf "\e[1;31m") \
+        LESS_TERMCAP_md=$(printf "\e[1;31m") \
+        LESS_TERMCAP_me=$(printf "\e[0m") \
+        LESS_TERMCAP_se=$(printf "\e[0m") \
+        LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
+        LESS_TERMCAP_ue=$(printf "\e[0m") \
+        LESS_TERMCAP_us=$(printf "\e[1;32m") \
+            man "$@"
+}
+
+function html2text() {
+    /usr/bin/html2text | recode html
+}
+
+# -------------------------------------------------------
+# :: Marks
+# -------------------------------------------------------
+export MARKPATH=~/.marks
+function jump {
+    cd -P $MARKPATH/$1 2>/dev/null || echo "No such mark: $1"
+}
+function mark {
+    mkdir -p $MARKPATH; ln -sf $(pwd | sed "s%^$HOME%~%") $MARKPATH/$1
+}
+function unmark {
+    rm -i $MARKPATH/$1
+}
+function marks {
+    ls -l $MARKPATH | sed 's/  / /g' | cut -d' ' -f9- | sed 's/ -/\t-/g' && echo
+}
+
+# -------------------------------------------------------
+
+## Eval math expression
+
+function e() {
+   python -c "from math import *; print(eval('$@'))";
+}
+
+## Inscape eval with , instead of .
+function ieval() {
+  echo "scale=4;$@" | tr ',' '.' | bc | tr '.' ','
+}
+
+## Convert Image to CMYK tiff
+function cmyk() {
+    #convert -profile /usr/share/color/icc/sRGB\ Color\ Space\ Profile.icm $@ -profile /usr/share/color/icc/EuroscaleCoated.icc "`fname "$1"`"-cmyk.tif
+    convert -profile /usr/share/color/icc/colord/sRGB.icc $@ -profile /usr/share/color/icc/USWebCoatedSWOP.icc "`fname "$1"`"-cmyk.tif
+}
