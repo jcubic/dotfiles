@@ -57,6 +57,7 @@ alias colorize='while read -r line;do printf "\033[38;5;%dm%s\033[0m\n" $(($RAND
 alias sound-settings="pavucontrol"
 alias list-sinks="pacmd list-sinks"
 alias sink-mute="pacmd set-sink-mute"
+alias font-refresh="sudo fc-cache -f -v"
 
 ## Math
 alias sum='separate + | bc'
