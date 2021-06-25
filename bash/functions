@@ -2,6 +2,12 @@ function ansi() {
   tr '\0' ' ' < "$@" | sed 's/\x1A.*//' | iconv -f CP437; echo
 }
 
+# ref: https://unix.stackexchange.com/a/593061/1806
+function bluetooth-fix() {
+  sudo modprobe -r btusb
+  sudo modprobe btusb
+}
+
 function y() {
     youtube-dl -c -o "%(title)s.%(ext)s" $@
 }
