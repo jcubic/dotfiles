@@ -71,3 +71,8 @@ function cmyk() {
     #convert -profile /usr/share/color/icc/sRGB\ Color\ Space\ Profile.icm $@ -profile /usr/share/color/icc/EuroscaleCoated.icc "`fname "$1"`"-cmyk.tif
     convert -profile /usr/share/color/icc/colord/sRGB.icc $@ -profile /usr/share/color/icc/USWebCoatedSWOP.icc "`fname "$1"`"-cmyk.tif
 }
+
+## Misc
+doc() {
+    curl "https://cheat.sh/$1" | less
+}

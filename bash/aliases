@@ -66,3 +66,9 @@ alias product='separate * | bc'
 ## git
 
 alias first-commit='git log $(git rev-list --max-parents=0 HEAD)'
+
+## Modern Unix from https://github.com/ibraheemdev/modern-unix
+alias cat='bat'
+alias ls='exa'
+
+alias server='python3 -m http.server'
