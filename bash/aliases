@@ -6,6 +6,7 @@ alias ls='ls -h --color=auto'
 alias grep='grep --color=auto'
 alias diff='diff --color=auto'
 alias rsync='rsync -rvltpzu --progress'
+alias git='LANG=en_US git'
 
 ## shortcuts
 
