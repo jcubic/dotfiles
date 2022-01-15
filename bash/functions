@@ -1,3 +1,5 @@
+## -*- mode: sh -*-
+
 function ansi() {
   tr '\0' ' ' < "$@" | sed 's/\x1A.*//' | iconv -f CP437; echo
 }
@@ -75,4 +77,15 @@ function cmyk() {
 ## Misc
 doc() {
     curl "https://cheat.sh/$1" | less
+}
+
+# get current branch in git repo
+function parse_git_branch() {
+    BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+    if [ "${BRANCH}" == "" ]
+    then
+        echo ""
+    else
+        echo " (${BRANCH})"
+    fi
 }
