@@ -90,8 +90,12 @@ function parse_git_branch() {
 }
 
 function multiline_prompt() {
+    GREEN='\[\033[01;32m\]'
+    BLUE='\[\033[01;34m\]'
+    ORANGE='\[\033[38;5;202m\]'
+    RESET='\[\033[00m\]'
     if [ "$color_prompt" = yes ]; then
-        export PS1="┌──(\[\033[01;32m\]\u@\h\[\033[00m\])-[\[\033[01;34m\]\w\[\033[00m\]]\[\033[38;5;202m\]\`parse_git_branch\`\[\033[m\]
+        export PS1="┌──(${GREEN}\u@\h${RESET})-[${BLUE}\w${RESET}]${ORANGE}\`parse_git_branch\`${RESET}
 └─\$ "
     else
         export PS1="┌──(\u@\h)-[\[\w\]]\`parse_git_branch\`
