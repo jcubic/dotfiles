@@ -58,12 +58,11 @@ function marks {
 # -------------------------------------------------------
 
 ## Eval math expression
-
 function e() {
    python -c "from math import *; print(eval('$@'))";
 }
 
-## Inscape eval with , instead of .
+## Inkscape eval with , instead of .
 function ieval() {
   echo "scale=4;$@" | tr ',' '.' | bc | tr '.' ','
 }
