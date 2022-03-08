@@ -35,7 +35,7 @@ function html2text() {
 }
 
 function lsq(){
-    ls -lh --full-time | tr -s ' ' | cut -d' ' -f5,9-
+    env ls -lh --full-time | tr -s ' ' | cut -d' ' -f5,9-
 }
 
 # -------------------------------------------------------
