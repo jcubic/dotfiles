@@ -89,17 +89,26 @@ function parse_git_branch() {
     fi
 }
 
+## usage:
+##   multiline_prompt
+## or
+##   multiline_prompt kali
 function multiline_prompt() {
     GREEN='\[\033[01;32m\]'
     BLUE='\[\033[01;34m\]'
     ORANGE='\[\033[38;5;202m\]'
     RESET='\[\033[00m\]'
     if [ "$color_prompt" = yes ]; then
-        export PS1="┌──(${GREEN}\u@\h${RESET})-[${BLUE}\w${RESET}]${ORANGE}\`parse_git_branch\`${RESET}
+        MODLINE="(${GREEN}\u@\h${RESET})-[${BLUE}\w${RESET}]${ORANGE}\`parse_git_branch\`${RESET}"
+    else
+        MODLINE="(\u@\h)-[\[\w\]]\`parse_git_branch\`"
+    fi
+    if [ "$1" = "kali" ]; then
+        export PS1="┌──$MODLINE
 └─\$ "
     else
-        export PS1="┌──(\u@\h)-[\[\w\]]\`parse_git_branch\`
-└─\$ "
+        export PS1="$MODLINE
+\$ "
     fi
     unset color_prompt force_color_prompt
     title_bar
