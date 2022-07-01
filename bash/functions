@@ -74,8 +74,8 @@ function cmyk() {
 }
 
 ## Misc
-doc() {
-    curl "https://cheat.sh/$1" | less
+doc () {
+    curl "https://cheat.sh/$1" 2>/dev/null | less
 }
 
 # get current branch in git repo
