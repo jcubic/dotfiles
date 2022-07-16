@@ -54,6 +54,8 @@ alias pjson='python -mjson.tool'
 
 alias colorize='while read -r line;do printf "\033[38;5;%dm%s\033[0m\n" $(($RANDOM%255)) "$line";done'
 
+alias purge='curl -w "\n" -s -X PURGE'
+
 ## System
 alias sound-settings="pavucontrol"
 alias list-sinks="pacmd list-sinks"
@@ -73,3 +75,4 @@ alias cat='bat'
 alias ls='exa'
 
 alias server='python3 -m http.server'
+alias server-php='php -S localhost:8000'
