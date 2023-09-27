@@ -18,6 +18,14 @@ function y-mp3() {
     y -x --audio-format mp3 $@
 }
 
+function wav2mp3() {
+  IFS=$'\n' find "$1" -name '*.wav' | while read FILE; do
+    DIR=`dirname "$FILE"`
+    MP3=${FILE/.wav/.mp3}
+    test -f "$MP3" || ffmpeg -nostdin -i "$FILE" -vn -ar 44100 -ac 2 -b:a 192k "$MP3"
+  done;
+}
+
 function man() {
     env \
         LESS_TERMCAP_mb=$(printf "\e[1;31m") \
