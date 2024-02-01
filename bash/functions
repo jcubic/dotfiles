@@ -11,7 +11,7 @@ function bluetooth-fix() {
 }
 
 function y() {
-    youtube-dl -c -o "%(title)s.%(ext)s" $@
+    yt-dlp -c -o "%(title)s.%(ext)s" $@
 }
 
 function y-mp3() {
