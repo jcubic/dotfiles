@@ -25,12 +25,13 @@ esac
 
 # don't put duplicate lines in the history. See bash(1) for more options
 # don't overwrite GNU Midnight Commander's setting of `ignorespace'.
-export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups
+export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups:erasedups
 # ... or force ignoredups and ignorespace
 
+# When the shell exits, append to the history file instead of overwriting it
 export HISTCONTROL=ignoreboth
-export HISTSIZE=8000
-export HISTFILESIZE=10000
+export HISTSIZE=80000
+export HISTFILESIZE=100000
 export HISTTIMEFORMAT="%Y-%m-%d %T "
 
 # append to the history file, don't overwrite it
@@ -39,3 +40,6 @@ shopt -s histappend
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
+
+# After each command, append to the history file and reread it
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
