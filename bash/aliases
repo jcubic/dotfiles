@@ -66,9 +66,11 @@ alias font-refresh="sudo fc-cache -f -v"
 alias sum='separate + | bc'
 alias product='separate * | bc'
 
-## git
+## git & GitHub
 
 alias first-commit='git log $(git rev-list --max-parents=0 HEAD)'
+alias suggest='gh copilot suggest'
+alias explain='gh copilot explain'
 
 ## Modern Unix from https://github.com/ibraheemdev/modern-unix
 alias cat='bat'
