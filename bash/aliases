@@ -62,6 +62,10 @@ alias list-sinks="pacmd list-sinks"
 alias sink-mute="pacmd set-sink-mute"
 alias font-refresh="sudo fc-cache -f -v"
 
+## Bookmarks
+alias b='pwd >> ~/.bookmarks'
+alias jump='cd $(cat ~/.bookmarks | sort | fzf)'
+
 ## Math
 alias sum='separate + | bc'
 alias product='separate * | bc'
