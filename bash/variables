@@ -48,3 +48,4 @@ PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; h
 if [ -x "$(command -v fzf)"  ]; then
   eval "$(fzf --bash)"
 fi
+

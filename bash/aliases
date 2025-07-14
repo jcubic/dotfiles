@@ -76,9 +76,16 @@ alias first-commit='git log $(git rev-list --max-parents=0 HEAD)'
 alias suggest='gh copilot suggest'
 alias explain='gh copilot explain'
 
-## Modern Unix from https://github.com/ibraheemdev/modern-unix
-alias cat='bat'
-alias ls='exa'
-
 alias server='python3 -m http.server'
 alias server-php='php -S localhost:8000'
+
+if [ -x "$(command -v eza)"  ]; then
+  alias ls='eza';
+elif [ -z "$(command -v exa)" ]; then
+  alias ls='exa';
+fi
+
+if [ -x "$(command -v bat)"  ]; then
+  alias cat='bat';
+fi
+
