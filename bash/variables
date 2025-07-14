@@ -46,5 +46,5 @@ PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; h
 
 # enable fzf on Fedora
 if [ -x "$(command -v fzf)"  ]; then
-  . /usr/share/fzf/shell/key-bindings.bash
+  eval "$(fzf --bash)"
 fi
