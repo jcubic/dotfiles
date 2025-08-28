@@ -34,6 +34,10 @@ export HISTSIZE=80000
 export HISTFILESIZE=100000
 export HISTTIMEFORMAT="%Y-%m-%d %T "
 
+export EDITOR='nano'
+export LESS='-R'
+export BROWSER='brave-browser'
+
 # append to the history file, don't overwrite it
 shopt -s histappend
 
