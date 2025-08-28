@@ -152,3 +152,25 @@ function server() {
     fi
 }
 
+function icon() {
+  convert "$1" -define icon:auto-resize=64,48,32,16 "$2"
+}
+
+function blue() {
+    echo -e "\x1b[34m\x1b[1m"$@"\x1b[0m";
+}
+
+function green() {
+    echo -e "\x1b[32m\x1b[1m"$@"\x1b[0m";
+}
+
+function red() {
+    echo -e "\x1b[31m\x1b[1m"$@"\x1b[0m";
+}
+
+function strerror() { python -c "import os; print os.strerror($1)"; }
+
+function nuke() {
+    PID=$(ps -C $1 -o pid=)
+    [ -n "$PID" ] && for i in $PID; do sudo kill -9 "$i"; done
+}
