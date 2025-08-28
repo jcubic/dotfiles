@@ -56,6 +56,8 @@ alias colorize='while read -r line;do printf "\033[38;5;%dm%s\033[0m\n" $(($RAND
 
 alias purge='curl -w "\n" -s -X PURGE'
 
+alias clear='clear && echo -en "\e[3J"'
+
 ## System
 alias sound-settings="pavucontrol"
 alias list-sinks="pacmd list-sinks"
