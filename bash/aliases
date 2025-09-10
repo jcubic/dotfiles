@@ -34,8 +34,21 @@ alias ls-exec='for i in *; do test -x "$i" && test -f "$1" && green $i; done'
 alias ls-dir='for i in *; do test -d "$i" && blue $i; done'
 
 ## Utils
-alias c-c='xclip -sel clip'
-alias c-v='xclip -o -sel clip'
+if [ -x "$(command -v pbcopy)"  ]; then
+  alias c-c='pbcopy'
+elif [ -x "$(command -v xclip)" ]; then
+  alias c-c='xclip -sel clip'
+fi
+
+if [ -x "$(command -v pbpaste)"  ]; then
+  alias c-c='pbpaste'
+elif [ -x "$(command -v xclip)" ]; then
+  alias c-v='xclip -o -sel clip'
+fi
+
+
+
+alias clear="printf '\33c\e[3J'"
 
 alias mount-iso='sudo mount -o loop -t iso9660'
 
