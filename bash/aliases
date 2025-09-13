@@ -47,8 +47,6 @@ elif [ -x "$(command -v xclip)" ]; then
   alias c-v='xclip -o -sel clip'
 fi
 
-
-
 alias clear="printf '\33c\e[3J'"
 
 alias mount-iso='sudo mount -o loop -t iso9660'
@@ -73,6 +71,9 @@ alias purge='curl -w "\n" -s -X PURGE'
 alias clear='clear && echo -en "\e[3J"'
 
 alias rm-ssh='ssh-keygen -R'
+
+alias dim='sudo brightnessctl -d intel_backlight s 5%'
+alias undim='sudo brightnessctl -d intel_backlight s 50%'
 
 ## System
 alias sound-settings="pavucontrol"
