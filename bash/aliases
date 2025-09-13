@@ -1,3 +1,4 @@
+
 ## Detfauls
 
 alias wget='wget -c'
@@ -70,6 +71,8 @@ alias colorize='while read -r line;do printf "\033[38;5;%dm%s\033[0m\n" $(($RAND
 alias purge='curl -w "\n" -s -X PURGE'
 
 alias clear='clear && echo -en "\e[3J"'
+
+alias rm-ssh='ssh-keygen -R'
 
 ## System
 alias sound-settings="pavucontrol"
