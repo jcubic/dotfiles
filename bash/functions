@@ -174,3 +174,14 @@ function nuke() {
     PID=$(ps -C $1 -o pid=)
     [ -n "$PID" ] && for i in $PID; do sudo kill -9 "$i"; done
 }
+
+fzf_command_exec() {
+    local selected_command
+    selected_command=$(compgen -c | sort -u | fzf --height 40% --reverse)
+    if [ -n "$selected_command" ]; then
+        READLINE_LINE="$selected_command"
+        READLINE_POINT=${#selected_command}
+    fi
+}
+
+bind -x '"\C-f": fzf_command_exec'
