@@ -12,7 +12,7 @@ alias git='LANG=en_US git'
 ## shortcuts
 
 alias lips='lips -q'
-alias ag='ast-grep'
+alias sg='ast-grep'
 
 ## Diagnostics
 alias tu='top -o %CPU'
