@@ -1,3 +1,7 @@
+;; --------------------------------------------------------------------------
+;; Emacs Internals overwrites
+;; --------------------------------------------------------------------------
+
 (defun make-obsolete (obsolete-name current-name &optional when)
   "Make the byte-compiler warn that function OBSOLETE-NAME is obsolete.
 OBSOLETE-NAME should be a function name or macro name (a symbol).
@@ -102,3 +106,86 @@ the end of the list of defaults just after the default value."
     (if (listp def)
         (append def all)
       (cons def (delete def all)))))
+
+;; recursive minibuffers
+(setq enable-recursive-minibuffers t)
+(minibuffer-depth-indicate-mode 1)
+
+;; Search in Minibufer inside M-x fix
+(defun read-extended-command ()
+  "Read command name to invoke in `execute-extended-command'."
+  (minibuffer-with-setup-hook
+      (lambda ()
+        (set (make-local-variable 'minibuffer-default-add-function)
+             (lambda ()
+               ;; Get a command name at point in the original buffer
+               ;; to propose it after M-n.
+               (let ((def (with-current-buffer
+                              (window-buffer (minibuffer-selected-window))
+                            (and (commandp (function-called-at-point))
+                                 (format "%S" (function-called-at-point)))))
+                     (all (sort (minibuffer-default-add-completions)
+                                (lambda (a b) (string< a b)))))
+                 (if def
+                     (cons def (delete def all))
+                   all)))))
+    ;; Read a string, completing from and restricting to the set of
+    ;; all defined commands.  Don't provide any initial input.
+    ;; Save the command read on the extended-command history list.
+    (completing-read
+     (concat (cond
+          ((eq current-prefix-arg '-) "- ")
+          ((and (consp current-prefix-arg)
+            (eq (car current-prefix-arg) 4)) "C-u ")
+          ((and (consp current-prefix-arg)
+            (integerp (car current-prefix-arg)))
+           (format "%d " (car current-prefix-arg)))
+          ((integerp current-prefix-arg)
+           (format "%d " current-prefix-arg)))
+             ;; This isn't strictly correct if `execute-extended-command'
+             ;; is bound to anything else (e.g. [menu]).
+             ;; It could use (key-description (this-single-command-keys)),
+             ;; but actually a prompt other than "M-x" would be confusing,
+             ;; because "M-x" is a well-known prompt to read a command
+             ;; and it serves as a shorthand for "Extended command: ".
+             "M-x ")
+     obarray 'commandp t nil 'extended-command-history)))
+
+;; --------------------------------------------------------------------------
+;; Minibuffer modifications
+;; --------------------------------------------------------------------------
+
+;; Jump to minibuffer
+(defun switch-to-minibuffer ()
+  "Switch to minibuffer window."
+  (interactive)
+  (if (active-minibuffer-window)
+      (select-window (active-minibuffer-window))
+    (error "Minibuffer is not active")))
+
+(defun insert-filename-or-buffername ()
+  "If the buffer has a file, insert the base name of that file.
+  Otherwise insert the buffer name."
+  (interactive)
+  (let* ((buffer (window-buffer (minibuffer-selected-window)))
+         (file-path-maybe (buffer-file-name buffer)))
+    (insert (if file-path-maybe
+                (file-name-nondirectory file-path-maybe)
+              (buffer-name buffer)))))
+
+(defun copy-path ()
+  "insert path of the filename into kill ring"
+  (interactive)
+  (let ((path (buffer-file-name)))
+    (when path
+      (kill-new path))))
+
+
+(global-set-key (kbd "C-c o") 'switch-to-minibuffer)
+(global-set-key (kbd "C-M-g") 'abort-recursive-edit)
+(global-set-key (kbd "C-c n")
+                (lambda ()
+                  (interactive)
+                  (if (eq major-mode 'minibuffer-inactive-mode)
+                      (insert-filename-or-buffername)
+                    (copy-path))))
