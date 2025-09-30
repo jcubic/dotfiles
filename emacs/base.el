@@ -32,3 +32,11 @@
                 (lambda (e)
                   (interactive "e")
                   (message "C+<mouse>")))
+
+;; http://emacs.stackexchange.com/questions/22647/reload-single-file-in-every-window
+(defun reload ()
+  "Revert buffer, then restore previous position."
+  (interactive)
+  (let ((pt  (point)))
+    (revert-buffer t t)
+    (goto-char pt)))
