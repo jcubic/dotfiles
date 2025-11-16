@@ -15,7 +15,8 @@
       (setq-local flymake-languagetool-language "pl-PL")
     (setq-local flymake-languagetool-language "en-US"))
   (flymake-languagetool-load)
-  (flymake-mode))
+  (flymake-mode)
+  )
 
 (defun lang (lang)
   (interactive "sLanguage: ")

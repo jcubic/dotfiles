@@ -5,6 +5,7 @@
 (setq ring-bell-function 'ignore)
 (setq debug-on-error 1)
 (setq confirm-kill-processes nil)
+(setq scroll-error-top-bottom t)
 
 (global-auto-revert-mode t)
 
