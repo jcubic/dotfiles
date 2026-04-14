@@ -21,6 +21,8 @@ alias ram='sudo dmidecode --type 17'
 alias my-ip="dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'\"' '{ print \$2}'"
 alias wscan='sudo iwlist wlp3s0 scan'
 
+alias open='opencode'
+
 ## Directories
 
 alias cdt='cd ~/projects/jcubic/terminal/'
@@ -75,6 +77,8 @@ alias rm-ssh='ssh-keygen -R'
 
 alias dim='sudo brightnessctl -d intel_backlight s 5%'
 alias undim='sudo brightnessctl -d intel_backlight s 50%'
+
+alias why='witr'
 
 ## System
 alias sound-settings="pavucontrol"
