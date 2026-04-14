@@ -7,6 +7,10 @@
 (setq confirm-kill-processes nil)
 (setq scroll-error-top-bottom t)
 
+;; transparenct frame
+(set-frame-parameter nil 'alpha-background 80)
+(add-to-list 'default-frame-alist '(alpha-background . 80))
+
 (global-auto-revert-mode t)
 
 (when (memq window-system '(mac ns x))
