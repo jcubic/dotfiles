@@ -38,6 +38,8 @@ export EDITOR='nano'
 export LESS='-R'
 export BROWSER='brave-browser'
 
+export GH_TELEMETRY=false
+
 # append to the history file, don't overwrite it
 shopt -s histappend
 
