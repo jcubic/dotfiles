@@ -18,6 +18,10 @@
 
 (setenv "NODE_NO_READLINE" "1")
 (setenv "BROWSER" "brave-browser")
+
+(setq browse-url-browser-function 'browse-url-generic
+      browse-url-generic-program "brave-browser")
+
 (setq inferior-js-program-command "node --interactive")
 
 ;; fix bug with history and killed buffers
