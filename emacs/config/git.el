@@ -1,3 +1,5 @@
+(require 'vc-git)
+
 ;; --------------------------------------------------------------------------
 (defun shell-line (command)
   (replace-regexp-in-string "\n" "" (shell-command-to-string command)))
