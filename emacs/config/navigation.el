@@ -1,5 +1,5 @@
 ;; --------------------------------------------------------------------------
-;; This code allows you to swith between buffers in same major mode
+;; :: SAME MAJOR MODE SWTICH
 ;; --------------------------------------------------------------------------
 
 (defun buffer-same-mode (change-buffer-fun)
@@ -21,7 +21,7 @@
 (global-set-key [C-tab] 'next-buffer-same-mode)
 
 ;; --------------------------------------------------------------------------
-;; switch between windows
+;; :: SWITCH BETWEEN WINDOWS
 ;; --------------------------------------------------------------------------
 
 (defun ignore-error-wrapper (fn)
@@ -39,7 +39,7 @@
 (global-set-key [M-down] (ignore-error-wrapper 'windmove-down))
 
 ;; --------------------------------------------------------------------------
-;; Bookmarks in same buffer
+;; :: BOOKMARKS IN SAME BUFFER
 ;; --------------------------------------------------------------------------
 (defvar bookmark-markers '())
 
@@ -86,3 +86,74 @@
 
 ;; overwrite marker pop and jump to just jump
 (global-set-key (kbd "C-x C-SPC") 'jump-to-mark)
+
+;; --------------------------------------------------------------------------
+;; :: MOVE LINES
+;; --------------------------------------------------------------------------
+(defun move-line-up ()
+  "Move up the current line."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+
+(defun move-line-down ()
+  "Move down the current line."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(global-set-key [(control shift down)]  'move-line-down)
+(global-set-key [(control shift up)]  'move-line-up)
+
+;; --------------------------------------------------------------------------
+;; :: MOUSEWHEEL
+;; --------------------------------------------------------------------------
+(defun sd-mousewheel-scroll-up (event)
+  "Scroll window under mouse up by five lines."
+  (interactive "e")
+  (let ((current-window (selected-window)))
+    (unwind-protect
+        (progn
+          (select-window (posn-window (event-start event)))
+          (scroll-up 5))
+      (select-window current-window))))
+
+(defun sd-mousewheel-scroll-down (event)
+  "Scroll window under mouse down by five lines."
+  (interactive "e")
+  (let ((current-window (selected-window)))
+    (unwind-protect
+        (progn
+          (select-window (posn-window (event-start event)))
+          (scroll-down 5))
+      (select-window current-window))))
+
+(global-set-key (kbd "<mouse-5>") 'sd-mousewheel-scroll-up)
+(global-set-key (kbd "<mouse-4>") 'sd-mousewheel-scroll-down)
+
+;; --------------------------------------------------------------------------
+;; :: SHOW IN SAME BUFFER
+;; --------------------------------------------------------------------------
+(setq same-window-list '("*Help*" "*Completions*" "*Backtrace*" "*js*"))
+
+(dolist (name same-window-list)
+  (add-to-list 'same-window-buffer-names name))
+
+(defun toggle-same ()
+  "function toggle buffers in same-window-list"
+  (interactive)
+  (dolist (name same-window-list)
+    (let ((help name))
+      (if (member help same-window-buffer-names)
+          (progn
+            (message "same - disabled")
+            (setq same-window-buffer-names
+                  (remove help same-window-buffer-names)))
+        (progn
+          (message "same - enabled")
+          (add-to-list 'same-window-buffer-names help))))))
+
+(global-set-key (kbd "C-c h") 'toggle-same)
