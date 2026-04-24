@@ -9,6 +9,16 @@
 (setq require-final-newline t)
 
 ;; --------------------------------------------------------------------------
+;; :: UTF-8 CHARSET
+;; --------------------------------------------------------------------------
+(set-language-environment 'UTF-8)
+(setq locale-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8-unix)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+
+;; --------------------------------------------------------------------------
 ;; :: MAIN UI
 ;; --------------------------------------------------------------------------
 (mouse-wheel-mode t)
