@@ -9,6 +9,13 @@
 (setq require-final-newline t)
 
 ;; --------------------------------------------------------------------------
+;; :: NOTIFICATIONS
+;; --------------------------------------------------------------------------
+(setq notify-method 'notify-via-libnotify)
+(fset 'yes-or-no-p 'y-or-n-p)
+(setq next-line-add-newlines nil)
+
+;; --------------------------------------------------------------------------
 ;; :: DISABLED COMMANDS
 ;; --------------------------------------------------------------------------
 (setq disabled-command-function nil)
