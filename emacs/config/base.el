@@ -9,6 +9,12 @@
 (setq require-final-newline t)
 
 ;; --------------------------------------------------------------------------
+;; :: DEFAULT BROWSER
+;; --------------------------------------------------------------------------
+(setq browse-url-browser-function 'browse-url-generic
+      browse-url-generic-program "brave-browser")
+
+;; --------------------------------------------------------------------------
 ;; :: NOTIFICATIONS
 ;; --------------------------------------------------------------------------
 (setq notify-method 'notify-via-libnotify)
