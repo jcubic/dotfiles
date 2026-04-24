@@ -8,9 +8,10 @@
 
 (setq agent-shell-anthropic-default-model-id "claude-opus-4-6")
 
-(defun claude ()
-  (interactive)
-  (agent-shell-new-shell))
+(defun claude (dir)
+  (interactive (list (read-directory-name "Directory: " default-directory)))
+  (let ((default-directory dir))
+    (agent-shell--new-shell :location dir)))
 
 (setq agent-shell-mcp-servers
       '(((name . "context7")
@@ -21,28 +22,64 @@
         ((name . "DeepWiki")
          (type . "http")
          (url . "https://mcp.deepwiki.com/mcp")
-         (headers . ()))
+         (headers . nil))
         ((name . "chrome-devtools")
          (command . "npx")
          (args . ("-y" "chrome-devtools-mcp@latest"))
-         (env . ()))
+         (env . nil))
         ((name . "chakra-ui")
          (command . "npx")
          (args . ("-y" "@chakra-ui/react-mcp"))
-         (env . ()))
-        (name . "reader")
-        (command . "npx")
-        (args . ("-y" "@nicepkg/jina-reader-mcp"))
-        (env . ()))
+         (env . nil))
+        ((name . "reader")
+         (command . "npx")
+         (args . ("-y" "@nicepkg/jina-reader-mcp"))
+         (env . nil))
         ((name . "playwright")
          (command . "npx")
          (args . ("-y" "@playwright/mcp@latest"))
-         (env . ()))))
+         (env . nil))))
 
 (defun agent-shell-hook ()
   (interactive)
   (local-set-key [C-M-tab] 'previous-buffer-same-mode)
   (local-set-key [C-tab] 'next-buffer-same-mode)
-  (local-set-key [s-tab] 'agent-shell-cycle-session-mode))
+  (local-set-key [s-tab] 'agent-shell-cycle-session-mode)
+  (local-set-key [C-up] 'backward-paragraph)
+  (local-set-key [C-down] 'forward-paragraph))
 
 (add-hook 'agent-shell-mode 'agent-shell-hook)
+
+(setq agent-shell-permission-responder-function
+      (lambda (permission)
+        (let* ((tool-call (map-elt permission :tool-call))
+               (kind (map-elt tool-call :kind))
+               (title (or (map-elt tool-call :title) ""))
+               (allow-choice (seq-find
+                              (lambda (opt)
+                                (equal (map-elt opt :kind) "allow_once"))
+                              (map-elt permission :options)))
+               (should-allow
+                (cond
+                 ;; Read/write files — allow
+                 ((member kind '("read" "write")) t)
+                 ;; Bash commands
+                 ((equal kind "execute")
+                  (and
+                   ;; Block sudo and ssh
+                   (not (string-match-p "\\`sudo " title))
+                   (not (string-match-p "\\`ssh " title))
+                   ;; Allow safe git commands, block other git
+                   (not (and (string-match-p "\\`git " title)
+                             (not (string-match-p
+                                   (concat "\\`git "
+                                           "\\(checkout\\|status\\|diff"
+                                           "\\|log\\|show\\|branch"
+                                           "\\|remote -v\\|ls-files\\)")
+                                   title))))))
+                 ;; Everything else — allow
+                 (t t))))
+          (when (and should-allow allow-choice)
+            (funcall (map-elt permission :respond)
+                     (map-elt allow-choice :option-id))
+            t))))
