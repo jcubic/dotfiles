@@ -189,3 +189,12 @@ the end of the list of defaults just after the default value."
                   (if (eq major-mode 'minibuffer-inactive-mode)
                       (insert-filename-or-buffername)
                     (copy-path))))
+
+(defun goto-minibuffer-window ()
+  "locate point to minibuffer window if it is active."
+  (interactive)
+  (let ((mb-win (active-minibuffer-window)))
+    (when mb-win
+      (select-window mb-win))))
+
+(global-set-key (kbd "C-c m") #'goto-minibuffer-window)
