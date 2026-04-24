@@ -157,3 +157,39 @@
           (add-to-list 'same-window-buffer-names help))))))
 
 (global-set-key (kbd "C-c h") 'toggle-same)
+
+;; --------------------------------------------------------------------------
+;; :: OPEN RELATIVE FILE FROM CLIPBOARD (grep friendly)
+;; --------------------------------------------------------------------------
+(defun get-kill-text ()
+  (interactive)
+  (let* ((text (current-kill 0))
+         (start 0)
+         (end (length text)))
+    (set-text-properties start end nil text)
+    text))
+
+(defun clear-filename (fname)
+  (replace-regexp-in-string
+   "\\(:.*\\|?.*\\)$" ""
+   (replace-regexp-in-string
+    "^webpack:///" ""
+    (replace-regexp-in-string "http://localhost\\(:[0-9]+\\)?/home/" "/home/" fname))))
+
+(defun open-clipboard-filename ()
+  (interactive)
+  (let* ((re "[\\\/]")
+         (open-filename (clear-filename (current-kill 0))) ;; strip grep output
+         (pattern (car (split-string open-filename re))) ;; get first directory
+         (name (replace-regexp-in-string (concat pattern re ".+")
+                                         open-filename
+                                         buffer-file-name)))
+    (if (file-exists-p name)
+        (progn (message name)
+               (find-file name)))))
+
+(defun force-keys ()
+  (local-set-key (kbd "C-c C-a") 'copilot-accept-completion)
+  (local-set-key (kbd "C-c C-f") 'open-clipboard-filename))
+
+(add-hook 'after-change-major-mode-hook 'force-keys)
