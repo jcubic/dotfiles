@@ -9,6 +9,15 @@
 (setq require-final-newline t)
 
 ;; --------------------------------------------------------------------------
+;; :: DISABLED COMMANDS
+;; --------------------------------------------------------------------------
+(setq disabled-command-function nil)
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
+
+;; --------------------------------------------------------------------------
 ;; :: UTF-8 CHARSET
 ;; --------------------------------------------------------------------------
 (set-language-environment 'UTF-8)
