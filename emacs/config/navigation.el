@@ -171,10 +171,12 @@
 
 (defun clear-filename (fname)
   (replace-regexp-in-string
+   "\\(^[ \t\n\r]*\\)\\|\\([ \t\n\r]*$\\)" ""
+  (replace-regexp-in-string
    "\\(:.*\\|?.*\\)$" ""
    (replace-regexp-in-string
     "^webpack:///" ""
-    (replace-regexp-in-string "http://localhost\\(:[0-9]+\\)?/home/" "/home/" fname))))
+    (replace-regexp-in-string "http://localhost\\(:[0-9]+\\)?/home/" "/home/" fname)))))
 
 (defun open-clipboard-filename ()
   (interactive)
@@ -189,7 +191,6 @@
                (find-file name)))))
 
 (defun force-keys ()
-  (local-set-key (kbd "C-c C-a") 'copilot-accept-completion)
   (local-set-key (kbd "C-c C-f") 'open-clipboard-filename))
 
 (add-hook 'after-change-major-mode-hook 'force-keys)
