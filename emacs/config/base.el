@@ -6,12 +6,59 @@
 (setq debug-on-error 1)
 (setq confirm-kill-processes nil)
 (setq scroll-error-top-bottom t)
+(setq require-final-newline t)
+
+;; --------------------------------------------------------------------------
+;; :: MAIN UI
+;; --------------------------------------------------------------------------
+(mouse-wheel-mode t)
+(menu-bar-mode -1)
+(show-paren-mode +1)
+(tool-bar-mode -1)
+(column-number-mode t)
+(global-auto-revert-mode t)
+(tooltip-mode -1)
+
+;; frame config
+(setq frame-title-format
+      '("GNU Emacs: "
+        (:eval (if (buffer-file-name)
+                   (abbreviate-file-name (buffer-file-name))
+                 "%b"))))
+
+;; time
+(setq display-time-interval 1)
+(setq display-time-format "%T")
+(display-time-mode)
 
 ;; transparenct frame
 (set-frame-parameter nil 'alpha-background 80)
 (add-to-list 'default-frame-alist '(alpha-background . 80))
 
-(global-auto-revert-mode t)
+;; bigger font
+(set-face-attribute 'default nil :height 110)
+
+;; no blinking
+(and (fboundp 'blink-cursor-mode) (blink-cursor-mode (- (*) (*) (*))))
+;; no scrollbar
+(scroll-bar-mode -1)
+
+;; --------------------------------------------------------------------------
+;; :: TABS VS SPACES
+;; --------------------------------------------------------------------------
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
+
+(defun tab-mode ()
+  "toggle tabs/spaces"
+  (interactive)
+  (message (concat "indent-tabs-mode "
+                   (if indent-tabs-mode "disabled" "enabled")))
+  (setq indent-tabs-mode (not indent-tabs-mode)))
+
+(global-set-key (kbd "C-c t") 'tab-mode)
+
+(global-set-key (kbd "C-c d") 'delete-trailing-whitespace)
 
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
@@ -49,3 +96,45 @@
   (let ((pt  (point)))
     (revert-buffer t t)
     (goto-char pt)))
+
+;; --------------------------------------------------------------------------
+;; :: CURSOR SETUP
+;; --------------------------------------------------------------------------
+(require 'multiple-cursors)
+(require 'bar-cursor)
+
+(bar-cursor-mode)
+(setq cursor-type 'bar)
+(setq-default cursor-type 'bar)
+(set-face-attribute 'mc/cursor-bar-face nil :height 3)
+
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-r") 'mc/edit-lines)
+
+;; --------------------------------------------------------------------------
+;; :: CLIPBOARD/YANKING
+;; --------------------------------------------------------------------------
+(setq x-select-enable-clipboard t)
+(setq mouse-drag-copy-region t)
+(setq x-select-enable-clipboard-manager nil)
+;; (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
+(setq interprogram-paste-function 'x-selection-value)
+(delete-selection-mode t)
+
+(add-to-list 'yank-excluded-properties 'font)
+(add-to-list 'yank-excluded-properties 'font-lock-face)
+
+(defun swap-region-ring (&optional arg)
+  "replace selected text with the one from kill ring"
+  (interactive "*P")
+  (remove-region)
+  (yank arg))
+
+(defun remove-region ()
+  (interactive)
+  (backward-delete-char (- (point) (mark))))
+
+(global-set-key (kbd "C-c y") 'swap-region-ring)
+(global-set-key (kbd "C-c C-c") 'remove-region)
+
