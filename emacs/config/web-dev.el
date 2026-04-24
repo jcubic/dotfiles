@@ -44,3 +44,28 @@
 
 ;; aligns annotation to the right hand side
 (setq company-tooltip-align-annotations t)
+
+;; -----------------------------------------------------------------------------
+;; :: PRETTIER
+;; -----------------------------------------------------------------------------
+(defun node-project-p (dir)
+  (interactive)
+  (file-exists-p (concat dir "/" "package.json")))
+
+(defun prettier-p (dir)
+  (interactive)
+  (let ((command (format "grep prettier %s"
+                         (concat dir "/" "package.json"))))
+    (= (call-process-shell-command command nil nil) 0)))
+
+(defun prettier ()
+  (interactive)
+  (let ((root (git-root-repo)))
+    (if (and root
+             (node-project-p root)
+             (prettier-p root))
+        (let ((command (format "npx prettier --write --ignore-unknown %s"
+                               (shell-quote-argument buffer-file-name))))
+          (shell-command command)))))
+
+(add-hook 'before-save-hook 'prettier)
