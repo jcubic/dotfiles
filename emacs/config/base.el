@@ -170,3 +170,6 @@
 (global-set-key (kbd "C-c y") 'swap-region-ring)
 (global-set-key (kbd "C-c C-c") 'remove-region)
 (define-key isearch-mode-map "\C-y" 'isearch-yank-kill)
+
+
+(global-set-key (kbd "C-c f") 'fill-paragraph)
