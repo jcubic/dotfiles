@@ -1,6 +1,6 @@
 # jcubic Dotfiles
 
-Bunch of bash customizations that I use on my Linux/Unix systems
+Bunch of customizations that I use on my Linux/Unix systems.
 
 ## Usage
 
@@ -32,7 +32,9 @@ PS: Make sure to read what the code is doing. I'm not responsible if something b
 
 ### GNU Emacs
 
-clone the repo and use this to load all the files:
+Feel free to look around and copy whatever you find usefull.
+
+To execute everything clone the repo and use this to load all the files:
 
 ```elisp
 (add-to-list 'load-path "~/path/dotfiles/emacs/packages")
