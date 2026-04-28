@@ -158,8 +158,8 @@ kind-specific pattern lists matching Claude Code settings.json format."
 (setq agent-shell-permission-responder-function
       (agent-shell-make-permission
        '((allow
-          (read . ("~/projects/jcubic/" "~/.claude/" "~/.agent-shell/" "~/.notifier/" "~/.bashrc" "~/bin/" "//tmp/"))
-          (write . ("~/.notifier/" "//tmp/" "/"))
+          (read . ("~/projects/jcubic/" "~/.claude/" "~/.agent-shell/" "~/.mutimon/" "~/.horavox/" "~/.bashrc" "~/bin/" "//tmp/"))
+          (write . ("~/.mutimon/" "~/.horavox/" "//tmp/" "/"))
           (execute . ("*"
                       "git checkout *" "git status *" "git diff *"
                       "git log*" "git show*" "git branch*"
