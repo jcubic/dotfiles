@@ -2,6 +2,13 @@
 (require 'tls)
 (require 'erc-match)
 
+;; SETUP ERC
+;;
+;; (setq ERC_USERNAME "<nick>")
+;; (setq ERC_PASSWORD "<password>")
+;; (setq ERC_CHANNEL_ACTIVITY_COMMAND "<channel activity after inactivy notification command>")
+;; (setq ERC_MENTION_COMMAND "<irc channel mention command>")
+
 (defun irc-freenode ()
   "Connect to the freenode"
   (interactive)
@@ -58,7 +65,7 @@
                                                            (cdr last-time-pair)))
                                 inactivity))
                          irc-channel-activity-sound)
-                    (async-exec-command "mpg123 -q /home/kuba/Pobrane/beep-6.mp3"))
+                    (async-exec-command ERC_CHANNEL_ACTIVITY_COMMAND))
                 (if (null last-time-pair)
                     (setf (cdr buffer-alist-pair)
                           (append buffer-alist
@@ -78,7 +85,7 @@
                     (string-match (regexp-quote "[matrix] <jcubic>") whole-text))))
     (if (and (eq match-type 'current-nick) (not notif) irc-mention-sound)
         (progn
-          (async-exec-command "mpg123 -q /home/kuba/Pobrane/beep-8.mp3")
+          (async-exec-command ERC_MENTION_COMMAND)
           (notify "ERC" msg)))))
 
 (add-hook 'erc-text-matched-hook 'erc-notify-on-mention)
