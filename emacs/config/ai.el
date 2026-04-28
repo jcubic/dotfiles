@@ -29,6 +29,10 @@
 
 (add-hook 'agent-shell-mode-hook 'agent-shell-hook)
 
+;; --------------------------------------------------------------------------
+;; :: AGENT-SHELL PERMISSION SYSTEM
+;; --------------------------------------------------------------------------
+
 (defun agent-shell--permission-path-match-p (path patterns)
   "Return non-nil if PATH matches any of PATTERNS.
 `/' means the session cwd, `//' prefix means literal root path,
