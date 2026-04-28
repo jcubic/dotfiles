@@ -16,33 +16,6 @@
   (let ((default-directory dir))
     (agent-shell--new-shell :location dir)))
 
-(setq agent-shell-mcp-servers
-      '(((name . "context7")
-         (type . "http")
-         (url . "https://mcp.context7.com/mcp")
-         (headers . (((name . "CONTEXT7_API_KEY")
-                      (value . "ctx7sk-37e7f1db-ad21-4e1f-9b76-87f52248fed2")))))
-        ((name . "DeepWiki")
-         (type . "http")
-         (url . "https://mcp.deepwiki.com/mcp")
-         (headers . nil))
-        ((name . "chrome-devtools")
-         (command . "npx")
-         (args . ("-y" "chrome-devtools-mcp@latest"))
-         (env . nil))
-        ((name . "chakra-ui")
-         (command . "npx")
-         (args . ("-y" "@chakra-ui/react-mcp"))
-         (env . nil))
-        ((name . "reader")
-         (command . "npx")
-         (args . ("-y" "@nicepkg/jina-reader-mcp"))
-         (env . nil))
-        ((name . "playwright")
-         (command . "npx")
-         (args . ("-y" "@playwright/mcp@latest"))
-         (env . nil))))
-
 (setq agent-shell-busy-indicator-frames 'dots-block)
 
 (defun agent-shell-hook ()
@@ -154,15 +127,3 @@ kind-specific pattern lists matching Claude Code settings.json format."
         (funcall (map-elt permission :respond)
                  (map-elt allow-choice :option-id))
         t))))
-
-(setq agent-shell-permission-responder-function
-      (agent-shell-make-permission
-       '((allow
-          (read . ("~/projects/jcubic/" "~/.claude/" "~/.agent-shell/" "~/.mutimon/" "~/.horavox/" "~/.bashrc" "~/bin/" "//tmp/"))
-          (write . ("~/.mutimon/" "~/.horavox/" "//tmp/" "/"))
-          (execute . ("*"
-                      "git checkout *" "git status *" "git diff *"
-                      "git log*" "git show*" "git branch*"
-                      "git remote -v *" "git ls-files*")))
-         (ask
-          (execute . ("sudo *" "ssh *" "git *"))))))
