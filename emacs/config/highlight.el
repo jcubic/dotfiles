@@ -44,12 +44,13 @@
 (setq-default show-trailing-whitespace t)
 
 (defun hide-trailing-whitespace ()
+  (interactive)
   (setq show-trailing-whitespace nil))
 
 (add-hook 'erc-mode-hook 'hide-trailing-whitespace)
 (add-hook 'shell-mode-hook 'hide-trailing-whitespace)
 (add-hook 'vterm-mode-hook 'hide-trailing-whitespace)
-(add-hook 'agent-shell-mode 'hide-trailing-whitespace)
+(add-hook 'agent-shell-mode-hook 'hide-trailing-whitespace)
 
 
 ;; Show Red tabs
