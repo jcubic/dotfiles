@@ -54,7 +54,7 @@
   (local-set-key [C-up] 'backward-paragraph)
   (local-set-key [C-down] 'forward-paragraph))
 
-(add-hook 'agent-shell-mode 'agent-shell-hook)
+(add-hook 'agent-shell-mode-hook 'agent-shell-hook)
 
 (defun agent-shell--permission-path-match-p (path patterns)
   "Return non-nil if PATH matches any of PATTERNS.
