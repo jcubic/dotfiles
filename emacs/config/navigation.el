@@ -17,8 +17,26 @@
   (interactive)
   (buffer-same-mode #'next-buffer))
 
+(defun switch-to-buffer-same-mode ()
+  "Switch to a buffer with the same major mode, or any buffer on empty input."
+  (interactive)
+  (let* ((mode major-mode)
+         (buffers (cl-remove-if-not
+                   (lambda (buf)
+                     (and (eq (buffer-local-value 'major-mode buf) mode)
+                          (not (eq buf (current-buffer)))))
+                   (buffer-list)))
+         (names (mapcar #'buffer-name buffers))
+         (target (completing-read
+                  (format "Switch to %s buffer (RET for all): " mode)
+                  names nil nil)))
+    (if (string-empty-p target)
+        (call-interactively #'switch-to-buffer)
+      (switch-to-buffer target))))
+
 (global-set-key [C-M-tab] 'previous-buffer-same-mode)
 (global-set-key [C-tab] 'next-buffer-same-mode)
+(global-set-key (kbd "C-x b") 'switch-to-buffer-same-mode)
 
 ;; --------------------------------------------------------------------------
 ;; :: SWITCH BETWEEN WINDOWS
