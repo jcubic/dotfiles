@@ -14,6 +14,7 @@ alias git='LANG=en_US git'
 alias lips='lips -q'
 alias sg='ast-grep'
 alias clj='rlwrap clojure'
+alias stats='tokei'
 
 ## Diagnostics
 alias tu='top -o %CPU'
