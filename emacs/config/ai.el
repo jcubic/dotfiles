@@ -92,7 +92,9 @@ Checks paths against both read and write allow patterns."
 KIND is \"read\", \"write\", or \"execute\".  For execute, if TITLE
 matches an `ask' pattern, only specific (non-wildcard) `allow'
 patterns can override it.  Additionally, any file paths in the
-command must be within allowed read or write directories."
+command must be within allowed read or write directories.
+For MCP tools, TITLE is matched against command patterns under
+the `mcp' kind."
   (let* ((kind-sym (intern kind))
          (allow-patterns (cdr (assq kind-sym (cdr (assq 'allow permissions)))))
          (ask-patterns (cdr (assq kind-sym (cdr (assq 'ask permissions))))))
@@ -112,6 +114,8 @@ command must be within allowed read or write directories."
                (agent-shell--permission-command-match-p title allow-patterns))))
         (and command-allowed
              (agent-shell--permission-paths-allowed-p title permissions))))
+     ((eq kind-sym 'mcp)
+      (agent-shell--permission-command-match-p title allow-patterns))
      (t nil))))
 
 (defun agent-shell-make-permission (permissions)
