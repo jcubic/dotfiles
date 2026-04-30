@@ -33,15 +33,15 @@
 ;; :: AGENT-SHELL PERMISSION SYSTEM
 ;; --------------------------------------------------------------------------
 
-(defun agent-shell--permission-path-match-p (path patterns)
+(defun agent-shell--permission-path-match-p (path patterns cwd)
   "Return non-nil if PATH matches any of PATTERNS.
-`/' means the session cwd, `//' prefix means literal root path,
+`/' means the session CWD, `//' prefix means literal root path,
 directory patterns match as prefixes, file patterns match exactly."
   (seq-some
    (lambda (pattern)
      (let ((expanded (cond
                       ((string= pattern "/")
-                       (agent-shell-cwd))
+                       cwd)
                       ((string-prefix-p "//" pattern)
                        (substring pattern 1))
                       (t (expand-file-name pattern)))))
@@ -74,7 +74,7 @@ Recognizes absolute paths, ~ paths, and relative paths."
         (push (expand-file-name token) paths)))
     (nreverse paths)))
 
-(defun agent-shell--permission-paths-allowed-p (command permissions)
+(defun agent-shell--permission-paths-allowed-p (command permissions cwd)
   "Return non-nil if all file paths in COMMAND are within allowed directories.
 Checks paths against both read and write allow patterns."
   (let* ((read-patterns (cdr (assq 'read (cdr (assq 'allow permissions)))))
@@ -84,23 +84,31 @@ Checks paths against both read and write allow patterns."
     (or (null paths)
         (seq-every-p
          (lambda (path)
-           (agent-shell--permission-path-match-p path all-patterns))
+           (agent-shell--permission-path-match-p path all-patterns cwd))
          paths))))
 
-(defun agent-shell--permission-should-allow-p (kind title permissions)
+(defun agent-shell--permission-should-allow-p (kind title permissions cwd)
   "Return non-nil if a tool of KIND with TITLE should be auto-allowed.
-KIND is \"read\", \"write\", or \"execute\".  For execute, if TITLE
+CWD is the session working directory used to expand `/' patterns.
+KIND is \"read\", \"write\", \"edit\", \"search\", or \"execute\".
+\"edit\" is treated as \"write\" and \"search\" as \"read\".  For execute, if TITLE
 matches an `ask' pattern, only specific (non-wildcard) `allow'
 patterns can override it.  Additionally, any file paths in the
 command must be within allowed read or write directories.
 For MCP tools, TITLE is matched against command patterns under
 the `mcp' kind."
   (let* ((kind-sym (intern kind))
-         (allow-patterns (cdr (assq kind-sym (cdr (assq 'allow permissions)))))
-         (ask-patterns (cdr (assq kind-sym (cdr (assq 'ask permissions))))))
+         (canonical (pcase kind-sym
+                      ('edit 'write)
+                      ('search 'read)
+                      (_ kind-sym)))
+         (allow-patterns (cdr (assq canonical (cdr (assq 'allow permissions)))))
+         (ask-patterns (cdr (assq canonical (cdr (assq 'ask permissions))))))
     (cond
-     ((memq kind-sym '(read write))
-      (agent-shell--permission-path-match-p title allow-patterns))
+     ((memq canonical '(read write))
+      (let ((paths (agent-shell--extract-command-paths title)))
+        (agent-shell--permission-path-match-p
+         (or (car paths) title) allow-patterns cwd)))
      ((eq kind-sym 'execute)
       (let ((command-allowed
              (if (agent-shell--permission-command-match-p title ask-patterns)
@@ -113,7 +121,7 @@ the `mcp' kind."
                   allow-patterns)
                (agent-shell--permission-command-match-p title allow-patterns))))
         (and command-allowed
-             (agent-shell--permission-paths-allowed-p title permissions))))
+             (agent-shell--permission-paths-allowed-p title permissions cwd))))
      ((eq kind-sym 'mcp)
       (agent-shell--permission-command-match-p title allow-patterns))
      (t nil))))
@@ -126,11 +134,13 @@ kind-specific pattern lists matching Claude Code settings.json format."
     (let* ((tool-call (map-elt permission :tool-call))
            (kind (map-elt tool-call :kind))
            (title (or (map-elt tool-call :title) ""))
+           (cwd (agent-shell-cwd))
+           (_ (message "Permission check: kind=%s title=%s cwd=%s" kind title cwd))
            (allow-choice (seq-find
                           (lambda (opt)
                             (equal (map-elt opt :kind) "allow_once"))
                           (map-elt permission :options))))
-      (when (and (agent-shell--permission-should-allow-p kind title permissions)
+      (when (and (agent-shell--permission-should-allow-p kind title permissions cwd)
                  allow-choice)
         (funcall (map-elt permission :respond)
                  (map-elt allow-choice :option-id))
