@@ -50,17 +50,31 @@ directory patterns match as prefixes, file patterns match exactly."
          (string= expanded path))))
    patterns))
 
-(defun agent-shell--permission-command-match-p (command patterns)
-  "Return non-nil if COMMAND matches any of PATTERNS.
+(defun agent-shell--permission-single-command-match-p (command patterns)
+  "Return non-nil if a single COMMAND matches any of PATTERNS.
 `*' matches everything, trailing `*' matches as a prefix."
-  (seq-some
-   (lambda (pattern)
-     (cond
-      ((string= pattern "*") t)
-      ((string-suffix-p "*" pattern)
-       (string-prefix-p (substring pattern 0 -1) command))
-      (t (string= pattern command))))
-   patterns))
+  (let ((cmd (string-trim command)))
+    (seq-some
+     (lambda (pattern)
+       (cond
+        ((string= pattern "*") t)
+        ((string-suffix-p "*" pattern)
+         (string-prefix-p (substring pattern 0 -1) cmd))
+        (t (string= pattern cmd))))
+     patterns)))
+
+(defun agent-shell--split-compound-command (command)
+  "Split a compound COMMAND into individual sub-commands."
+  (split-string command "[;|&]+" t "[ \t]+"))
+
+(defun agent-shell--permission-command-match-p (command patterns)
+  "Return non-nil if any sub-command in COMMAND matches PATTERNS.
+Splits compound commands on `;', `&&', `||', and `|'."
+  (let ((sub-commands (agent-shell--split-compound-command command)))
+    (seq-some
+     (lambda (cmd)
+       (agent-shell--permission-single-command-match-p cmd patterns))
+     sub-commands)))
 
 (defun agent-shell--extract-command-paths (command)
   "Extract file path arguments from COMMAND string.
@@ -87,6 +101,16 @@ Checks paths against both read and write allow patterns."
            (agent-shell--permission-path-match-p path all-patterns cwd))
          paths))))
 
+(defun agent-shell--mcp-tool-allowed-p (title)
+  "Return non-nil if TITLE names a tool from a configured MCP server.
+Extracts the server name from TITLE (e.g. `mcp__playwright__browse')
+and checks if it exists in `agent-shell-mcp-servers'."
+  (when (string-match "^mcp__\\([^_]+\\)__" title)
+    (let ((server-name (match-string 1 title)))
+      (seq-some (lambda (server)
+                  (equal (cdr (assq 'name server)) server-name))
+                agent-shell-mcp-servers))))
+
 (defun agent-shell--permission-should-allow-p (kind title permissions cwd)
   "Return non-nil if a tool of KIND with TITLE should be auto-allowed.
 CWD is the session working directory used to expand `/' patterns.
@@ -106,9 +130,12 @@ the `mcp' kind."
          (ask-patterns (cdr (assq canonical (cdr (assq 'ask permissions))))))
     (cond
      ((memq canonical '(read write))
-      (let ((paths (agent-shell--extract-command-paths title)))
-        (agent-shell--permission-path-match-p
-         (or (car paths) title) allow-patterns cwd)))
+      (let* ((paths (agent-shell--extract-command-paths title))
+             (path (or (car paths)
+                       (when (string-match " \\(.+\\)$" title)
+                         (expand-file-name (match-string 1 title) cwd))
+                       title)))
+        (agent-shell--permission-path-match-p path allow-patterns cwd)))
      ((eq kind-sym 'execute)
       (let ((command-allowed
              (if (agent-shell--permission-command-match-p title ask-patterns)
@@ -122,8 +149,9 @@ the `mcp' kind."
                (agent-shell--permission-command-match-p title allow-patterns))))
         (and command-allowed
              (agent-shell--permission-paths-allowed-p title permissions cwd))))
-     ((eq kind-sym 'mcp)
-      (agent-shell--permission-command-match-p title allow-patterns))
+     ((and (eq kind-sym 'other)
+           (string-prefix-p "mcp__" title))
+      (agent-shell--mcp-tool-allowed-p title))
      (t nil))))
 
 (defun agent-shell-make-permission (permissions)
