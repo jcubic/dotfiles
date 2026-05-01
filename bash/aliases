@@ -15,6 +15,7 @@ alias lips='lips -q'
 alias sg='ast-grep'
 alias clj='rlwrap clojure'
 alias stats='tokei'
+alias license='licensecheck'
 
 ## Diagnostics
 alias tu='top -o %CPU'
