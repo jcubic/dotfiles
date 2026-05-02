@@ -108,7 +108,7 @@ alias server-php='php -S localhost:8000'
 
 if [ -x "$(command -v eza)"  ]; then
   alias ls='eza';
-elif [ -z "$(command -v exa)" ]; then
+elif [ -x "$(command -v exa)" ]; then
   alias ls='exa';
 fi
 
