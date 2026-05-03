@@ -59,7 +59,9 @@ directory patterns match as prefixes, file patterns match exactly."
        (cond
         ((string= pattern "*") t)
         ((string-suffix-p "*" pattern)
-         (string-prefix-p (substring pattern 0 -1) cmd))
+         (let ((prefix (substring pattern 0 -1)))
+           (or (string-prefix-p prefix cmd)
+               (string= (string-trim-right prefix) cmd))))
         (t (string= pattern cmd))))
      patterns)))
 
