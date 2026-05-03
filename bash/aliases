@@ -17,6 +17,8 @@ alias clj='rlwrap clojure'
 alias stats='tokei'
 alias license='licensecheck -f ansi'
 
+alias earth="globe --animate --water '\x1b[34m-\x1b[m' --land '\x1b[32m#\x1b[m' --background ' ' --margin-inline 10 --margin-block 2 --pins '52.23,21.01' --pin '\x1b[31m@\x1b[m'"
+
 ## Diagnostics
 alias tu='top -o %CPU'
 alias tm='top -o %MEM'
@@ -115,4 +117,3 @@ fi
 if [ -x "$(command -v bat)"  ]; then
   alias cat='bat';
 fi
-
