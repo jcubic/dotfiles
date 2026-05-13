@@ -1,3 +1,4 @@
+(require 'emmet-mode)
 (require 'web-mode)
 (require 'company)
 (require 'prisma-mode)
