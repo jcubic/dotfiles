@@ -212,3 +212,34 @@
   (local-set-key (kbd "C-c C-f") 'open-clipboard-filename))
 
 (add-hook 'after-change-major-mode-hook 'force-keys)
+
+
+;; --------------------------------------------------------------------------
+;; :: KILL SAME MAJOR MODE BUFFER SWITCH
+;; --------------------------------------------------------------------------
+(defun my-switch-to-prev-buffer-same-mode (orig-fun window &optional bury-or-kill)
+  "After killing, prefer another buffer with the same major mode."
+  (let* ((killed-buf (when (eq bury-or-kill 'kill)
+                       (window-buffer window)))
+         (target-mode (when killed-buf
+                        (buffer-local-value 'major-mode killed-buf)))
+         (result (funcall orig-fun window bury-or-kill)))
+    (when (and target-mode
+               (window-live-p window)
+               (not (eq (buffer-local-value 'major-mode (window-buffer window))
+                        target-mode)))
+      (let ((candidates
+             (seq-filter (lambda (b)
+                           (and (buffer-live-p b)
+                                (not (eq b killed-buf))
+                                (not (eq b (window-buffer window)))
+                                (eq (buffer-local-value 'major-mode b) target-mode)
+                                (not (minibufferp b))
+                                (not (string-prefix-p " " (buffer-name b)))))
+                         (buffer-list))))
+        (when candidates
+          (set-window-buffer window (car candidates)))))
+    result))
+
+(advice-add 'switch-to-prev-buffer :around #'my-switch-to-prev-buffer-same-mode)
+;;(advice-remove 'switch-to-prev-buffer #'my-switch-to-prev-buffer-same-mode)
