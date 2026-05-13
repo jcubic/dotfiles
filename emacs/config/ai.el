@@ -6,17 +6,18 @@
 (setq agent-shell-anthropic-authentication
       (agent-shell-anthropic-make-authentication :login t))
 
-(setq agent-shell-preferred-agent-config (agent-shell-anthropic-make-claude-code-config))
+(setq agent-shell-preferred-agent-config
+      (agent-shell-anthropic-make-claude-code-config))
 
 (setq agent-shell-anthropic-default-model-id "claude-opus-4-6")
+(setq agent-shell-busy-indicator-frames 'dots-block)
+(setq agent-shell-context-sources nil)
 
 (defun claude (dir)
   "Start a new Agent Shell session in DIR."
   (interactive (list (read-directory-name "Directory: " default-directory)))
   (let ((default-directory dir))
-    (agent-shell--new-shell :location dir)))
-
-(setq agent-shell-busy-indicator-frames 'dots-block)
+    (agent-shell)))
 
 (defun agent-shell-hook ()
   "Set up key bindings for `agent-shell-mode' buffers."
@@ -175,3 +176,50 @@ kind-specific pattern lists matching Claude Code settings.json format."
         (funcall (map-elt permission :respond)
                  (map-elt allow-choice :option-id))
         t))))
+
+
+;; -----------------------------------------------------------------------------
+(defun agent-shell-session-file ()
+  "Copy the current session transcript file path to the kill ring."
+  (interactive)
+  (if agent-shell--transcript-file
+      (progn
+        (kill-new agent-shell--transcript-file)
+        (message "Copied: %s" agent-shell--transcript-file))
+    (user-error "No transcript file for this session")))
+
+;; -----------------------------------------------------------------------------
+;; Agent-Shell debug code
+;; -----------------------------------------------------------------------------
+(defun agent-ping ()
+  "Function wake up the agent-shell when it's halted. The request are in limbo never fullfilled so the agent is stalled."
+  (interactive)
+  (progn
+    (map-put! agent-shell--state :active-requests nil)
+    (shell-maker-finish-output :config shell-maker--config :success t)))
+
+;; -----------------------------------------------------------------------------
+(defun agent-show-pending ()
+  "show Agent-Shell pending requests"
+  (interactive)
+  (map-elt (map-elt agent-shell--state :client) :pending-requests))
+
+;; -----------------------------------------------------------------------------
+;; remove advice
+;; (advice-remove 'acp--route-incoming-message #'my/acp-debug-advice)
+;; (advice-mapc (lambda (fn _props) (message "%S" fn)) 'acp--route-incoming-message)
+;; -----------------------------------------------------------------------------
+
+(defun my/acp-debug-advice (orig-fn &rest args)
+  (condition-case err
+      (apply orig-fn args)
+    (error
+     (with-current-buffer (get-buffer-create "*agent-shell-debug*")
+       (goto-char (point-max))
+       (insert (format "\n\n=== %s ===\nError: %S\nBacktrace:\n%s\n"
+                       (format-time-string "%T")
+                       err
+                       (with-output-to-string (backtrace)))))
+     (message "agent-shell ACP error logged to *agent-shell-debug*"))))
+
+(advice-add 'acp--route-incoming-message :around #'my/acp-debug-advice)
