@@ -51,10 +51,21 @@ directory patterns match as prefixes, file patterns match exactly."
          (string= expanded path))))
    patterns))
 
+(defun agent-shell--normalize-git-command (command)
+  "Strip -C <path> from a git COMMAND for pattern matching.
+Returns (NORMALIZED-CMD . EXTRACTED-PATH-OR-NIL)."
+  (let ((cmd (string-trim command)))
+    (if (string-match "^\\(git\\)\\s-+-C\\s-+\\(\\S-+\\)\\s-+\\(.*\\)$" cmd)
+        (cons (concat "git " (match-string 3 cmd))
+              (expand-file-name (match-string 2 cmd)))
+      (cons cmd nil))))
+
 (defun agent-shell--permission-single-command-match-p (command patterns)
   "Return non-nil if a single COMMAND matches any of PATTERNS.
-`*' matches everything, trailing `*' matches as a prefix."
-  (let ((cmd (string-trim command)))
+`*' matches everything, trailing `*' matches as a prefix.
+Git commands with -C <path> are normalized before matching."
+  (let* ((normalized (agent-shell--normalize-git-command command))
+         (cmd (car normalized)))
     (seq-some
      (lambda (pattern)
        (cond
@@ -137,19 +148,33 @@ the `mcp' kind."
              (path (or (car paths)
                        (when (string-match " \\(.+\\)$" title)
                          (expand-file-name (match-string 1 title) cwd))
-                       title)))
+                       (expand-file-name title cwd))))
         (agent-shell--permission-path-match-p path allow-patterns cwd)))
      ((eq kind-sym 'execute)
-      (let ((command-allowed
-             (if (agent-shell--permission-command-match-p title ask-patterns)
-                 (seq-some
-                  (lambda (pattern)
-                    (and (not (string= pattern "*"))
-                         (if (string-suffix-p "*" pattern)
-                             (string-prefix-p (substring pattern 0 -1) title)
-                           (string= pattern title))))
-                  allow-patterns)
-               (agent-shell--permission-command-match-p title allow-patterns))))
+      (let* ((sub-commands (agent-shell--split-compound-command title))
+             (read-patterns (cdr (assq 'read (cdr (assq 'allow permissions)))))
+             (write-patterns (cdr (assq 'write (cdr (assq 'allow permissions)))))
+             (path-patterns (append read-patterns write-patterns))
+             (command-allowed
+              (seq-every-p
+               (lambda (cmd)
+                 (let ((trimmed (string-trim cmd)))
+                   (cond
+                    ;; cd <path>: allowed if path is within read/write dirs
+                    ((string-match "^cd\\s-+\\(\\S-+\\)" trimmed)
+                     (let ((path (expand-file-name (match-string 1 trimmed))))
+                       (agent-shell--permission-path-match-p path path-patterns cwd)))
+                    ;; matches ask pattern: need specific (non-wildcard) allow
+                    ((agent-shell--permission-single-command-match-p trimmed ask-patterns)
+                     (seq-some
+                      (lambda (pattern)
+                        (and (not (string= pattern "*"))
+                             (agent-shell--permission-single-command-match-p
+                              trimmed (list pattern))))
+                      allow-patterns))
+                    ;; otherwise: normal allow check
+                    (t (agent-shell--permission-single-command-match-p trimmed allow-patterns)))))
+               sub-commands)))
         (and command-allowed
              (agent-shell--permission-paths-allowed-p title permissions cwd))))
      ((and (eq kind-sym 'other)
@@ -177,8 +202,6 @@ kind-specific pattern lists matching Claude Code settings.json format."
                  (map-elt allow-choice :option-id))
         t))))
 
-
-;; -----------------------------------------------------------------------------
 (defun agent-shell-session-file ()
   "Copy the current session transcript file path to the kill ring."
   (interactive)
