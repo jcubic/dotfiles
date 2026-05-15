@@ -37,20 +37,26 @@
 (defun agent-shell--permission-path-match-p (path patterns cwd)
   "Return non-nil if PATH matches any of PATTERNS.
 `/' means the session CWD, `//' prefix means literal root path,
-directory patterns match as prefixes, file patterns match exactly."
-  (seq-some
-   (lambda (pattern)
-     (let ((expanded (cond
-                      ((string= pattern "/")
-                       cwd)
-                      ((string-prefix-p "//" pattern)
-                       (substring pattern 1))
-                      (t (expand-file-name pattern)))))
-       (if (string-suffix-p "/" expanded)
-           (or (string-prefix-p expanded path)
-               (string= (substring expanded 0 -1) path))
-         (string= expanded path))))
-   patterns))
+directory patterns match as prefixes, file patterns match exactly.
+Symlinks are resolved on both sides before comparing."
+  (let ((true-path (file-truename path)))
+    (seq-some
+     (lambda (pattern)
+       (let* ((expanded (cond
+                         ((string= pattern "/")
+                          cwd)
+                         ((string-prefix-p "//" pattern)
+                          (substring pattern 1))
+                         (t (expand-file-name pattern))))
+              (is-dir (string-suffix-p "/" expanded))
+              (true-expanded (file-name-as-directory (file-truename expanded)))
+              (true-expanded (if is-dir true-expanded
+                              (directory-file-name true-expanded))))
+         (if is-dir
+             (or (string-prefix-p true-expanded true-path)
+                 (string= (substring true-expanded 0 -1) true-path))
+           (string= true-expanded true-path))))
+     patterns)))
 
 (defun agent-shell--normalize-git-command (command)
   "Strip -C <path> from a git COMMAND for pattern matching.
