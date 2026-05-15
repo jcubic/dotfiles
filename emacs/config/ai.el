@@ -47,7 +47,8 @@ directory patterns match as prefixes, file patterns match exactly."
                        (substring pattern 1))
                       (t (expand-file-name pattern)))))
        (if (string-suffix-p "/" expanded)
-           (string-prefix-p expanded path)
+           (or (string-prefix-p expanded path)
+               (string= (substring expanded 0 -1) path))
          (string= expanded path))))
    patterns))
 
