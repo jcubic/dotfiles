@@ -180,7 +180,16 @@ the `mcp' kind."
              (agent-shell--permission-paths-allowed-p title permissions cwd))))
      ((and (eq kind-sym 'other)
            (string-prefix-p "mcp__" title))
-      (agent-shell--mcp-tool-allowed-p title))
+      (let* ((mcp-allow (cdr (assq 'mcp (cdr (assq 'allow permissions)))))
+             (mcp-ask (cdr (assq 'mcp (cdr (assq 'ask permissions)))))
+             (server-name (when (string-match "^mcp__\\([^_]+\\)__" title)
+                            (match-string 1 title))))
+        (when server-name
+          (if (member server-name mcp-ask)
+              nil
+            (or (member server-name mcp-allow)
+                (member "*" mcp-allow)
+                (agent-shell--mcp-tool-allowed-p title))))))
      (t nil))))
 
 (defun agent-shell-make-permission (permissions)
