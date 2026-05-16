@@ -1,4 +1,24 @@
 ;; ai.el --- Agent Shell configuration  -*- lexical-binding: t -*-
+;;
+;; Agent-shell permission usage
+;;
+;; (setq agent-shell-permission-responder-function
+;;       (agent-shell-make-permission
+;;        '((allow
+;;           (read . ("~/projects/" "~/.claude/" "~/.agent-shell/"
+;;                    "~/.emacs" "~/.bashrc" "~/bin/" "//tmp/"
+;;                    "~/.emacs.d/"))
+;;           (write . ("//tmp/" "/"))
+;;           (execute . ("*"
+;;                       "git checkout *" "git status *" "git diff *"
+;;                       "git clone *" "git ls-tree *" "git ls-files *"
+;;                       "git log *" "git show *" "git branch *"
+;;                       "git reflog *" "git rev-parse *" "git remote -v *"
+;;                       "git config *" "git grep *"))
+;;           (mcp . ("*")))
+;;          (ask
+;;           (execute . ("sudo *" "ssh *" "git *" "kill *"))
+;;           (mcp . ("playwright-browser")))))) ;; MCP that use my own browser
 
 (require 'acp)
 (require 'agent-shell)
