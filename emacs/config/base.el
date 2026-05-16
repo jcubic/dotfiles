@@ -77,6 +77,20 @@
 (scroll-bar-mode -1)
 
 ;; --------------------------------------------------------------------------
+;; :: GIT GUTTER
+;; --------------------------------------------------------------------------
+(require 'git-gutter)
+
+(global-git-gutter-mode +1)
+
+(defun gutter-refresh ()
+  (interactive))
+
+(add-to-list 'git-gutter:update-commands 'gutter-refresh)
+
+(global-set-key (kbd "C-c C-g") 'gutter-refresh)
+
+;; --------------------------------------------------------------------------
 ;; :: TABS VS SPACES
 ;; --------------------------------------------------------------------------
 (setq-default indent-tabs-mode nil)
