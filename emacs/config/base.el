@@ -83,6 +83,8 @@
 
 (global-git-gutter-mode +1)
 
+(setq git-gutter:disabled-modes '(agent-shell-mode term-mode))
+
 (defun gutter-refresh ()
   (interactive))
 
