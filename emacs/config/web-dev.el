@@ -69,4 +69,4 @@
                                (shell-quote-argument buffer-file-name))))
           (shell-command command)))))
 
-(add-hook 'before-save-hook 'prettier)
+(add-hook 'after-save-hook 'prettier)
