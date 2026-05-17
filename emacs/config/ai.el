@@ -17,7 +17,7 @@
 ;;                       "git config *" "git grep *"))
 ;;           (mcp . ("*")))
 ;;          (ask
-;;           (execute . ("sudo *" "ssh *" "git *" "kill *"))
+;;           (execute . ("sudo *" "ssh *" "git *" "kill *" "emacsclient *"))
 ;;           (mcp . ("playwright-browser")))))) ;; MCP that use my own browser
 
 (require 'acp)
