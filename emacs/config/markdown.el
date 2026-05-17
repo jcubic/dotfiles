@@ -43,3 +43,15 @@
 (dolist (pair '(("\\.\\(md\\|mdx\\)\\'" . poly-markdown-mode)
                 ("\\.markdown$" . poly-markdown-mode)))
   (add-to-list 'auto-mode-alist pair))
+
+;; -----------------------------------------------------------------------------
+;; :: hack to fix error in markdown mode
+;; -----------------------------------------------------------------------------
+
+(defun markdown-fontify-headings-fix (orig-fun last)
+  "Guard against stale match-data from polymode re-fontification."
+    (condition-case nil
+        (funcall orig-fun last)
+      (wrong-type-argument nil)))
+
+(advice-add 'markdown-fontify-headings :around 'markdown-fontify-headings-fix)
