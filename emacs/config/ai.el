@@ -32,12 +32,14 @@
 (setq agent-shell-anthropic-default-model-id "claude-opus-4-6")
 (setq agent-shell-busy-indicator-frames 'dots-block)
 (setq agent-shell-context-sources nil)
+(setq acp-logging-enabled t)
+(setq agent-shell-session-strategy 'prompt)
 
 (defun claude (dir)
   "Start a new Agent Shell session in DIR."
-  (interactive (list (read-directory-name "Directory: " default-directory)))
-  (let ((default-directory dir))
-    (agent-shell)))
+  (interactive (list (read-directory-name "Directory: " default-directory nil t)))
+  (let ((default-directory (file-name-as-directory (expand-file-name dir))))
+    (agent-shell '(4))))
 
 (defun agent-shell-hook ()
   "Set up key bindings for `agent-shell-mode' buffers."
@@ -282,3 +284,60 @@ kind-specific pattern lists matching Claude Code settings.json format."
      (message "agent-shell ACP error logged to *agent-shell-debug*"))))
 
 (advice-add 'acp--route-incoming-message :around #'my/acp-debug-advice)
+
+;; --------------------------------------------------------------------------
+;; :: AGENT-SHELL CONFIG
+;; --------------------------------------------------------------------------
+(setq agent-shell-mcp-servers
+      `(((name . "context7")
+         (type . "http")
+         (url . "https://mcp.context7.com/mcp")
+         (headers . (((name . "CONTEXT7_API_KEY")
+                      (value . ,(if (boundp 'CONTEXT_7_API_KEY) CONTEXT_7_API_KEY ""))))))
+        ((name . "brave-search")
+         (command . "npx")
+         (args . ("-y" "@brave/brave-search-mcp-server"))
+         (env . (((name . "BRAVE_API_KEY")
+                  (value . ,(if (boundp 'BRAVE_SEARCH_API_KEY) BRAVE_SEARCH_API_KEY ""))))))
+        ((name . "DeepWiki")
+         (type . "http")
+         (url . "https://mcp.deepwiki.com/mcp")
+         (headers . nil))
+        ((name . "chrome-devtools")
+         (command . "npx")
+         (args . ("-y" "chrome-devtools-mcp@latest" "--browser-url=http://127.0.0.1:9222"))
+         (env . nil))
+        ((name . "chakra-ui")
+         (command . "npx")
+         (args . ("-y" "@chakra-ui/react-mcp"))
+         (env . nil))
+        ((name . "reader")
+         (command . "npx")
+         (args . ("-y" "@nicepkg/jina-reader-mcp"))
+         (env . nil))
+        ((name . "playwright")
+         (command . "npx")
+         (args . ("-y" "@playwright/mcp@latest" "--config" "~/projects/jcubic/dotfiles/emacs/playwright-mcp.json"))
+         (env . nil))
+        ((name . "playwright-browser")
+         (command . "npx")
+         (args . ("-y" "@playwright/mcp@latest" "--extension"))
+         (env . nil))))
+
+(setq agent-shell-permission-responder-function
+      (agent-shell-make-permission
+       '((allow
+          (read . ("~/projects/" "~/.claude/" "~/.agent-shell/" "~/.mutimon/"
+                   "~/.horavox/" "~/.emacs" "~/.bashrc" "~/bin/" "//tmp/"
+                   "~/.emacs.d/"))
+          (write . ("~/.mutimon/" "~/.horavox/" "//tmp/" "/"))
+          (execute . ("*"
+                      "git checkout *" "git status *" "git diff *"
+                      "git clone *" "git ls-tree *" "git ls-files *"
+                      "git log *" "git show *" "git branch *"
+                      "git reflog *" "git rev-parse *" "git remote -v *"
+                      "git config *" "git grep *"))
+          (mcp . ("*")))
+         (ask
+          (execute . ("sudo *" "ssh *" "git *" "kill *" "emacsclient *" "emacs-version"))
+          (mcp . ("playwright-browser"))))))
