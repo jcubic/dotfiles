@@ -154,16 +154,37 @@ and checks if it exists in `agent-shell-mcp-servers'."
                   (equal (cdr (assq 'name server)) server-name))
                 agent-shell-mcp-servers))))
 
+(defun agent-shell--permission-extract-fetch-url (title)
+  "Extract the URL from a fetch permission TITLE.
+TITLE is typically \"Fetch https://...\"; returns just the URL."
+  (if (string-match "^Fetch \\(.*\\)$" title)
+      (match-string 1 title)
+    title))
+
+(defun agent-shell--permission-should-deny-p (kind title permissions _cwd)
+  "Return non-nil if a tool of KIND with TITLE should be auto-denied.
+Checks `deny' patterns in PERMISSIONS.  Currently supports `fetch'."
+  (let* ((kind-sym (intern kind))
+         (deny-patterns (cdr (assq kind-sym (cdr (assq 'deny permissions))))))
+    (when deny-patterns
+      (pcase kind-sym
+        ('fetch
+         (agent-shell--permission-single-command-match-p
+          (agent-shell--permission-extract-fetch-url title) deny-patterns))
+        (_ nil)))))
+
 (defun agent-shell--permission-should-allow-p (kind title permissions cwd)
   "Return non-nil if a tool of KIND with TITLE should be auto-allowed.
 CWD is the session working directory used to expand `/' patterns.
-KIND is \"read\", \"write\", \"edit\", \"search\", or \"execute\".
+KIND is \"read\", \"write\", \"edit\", \"search\", \"execute\", or \"fetch\".
 \"edit\" is treated as \"write\" and \"search\" as \"read\".  For execute, if TITLE
 matches an `ask' pattern, only specific (non-wildcard) `allow'
 patterns can override it.  Additionally, any file paths in the
 command must be within allowed read or write directories.
 For MCP tools, TITLE is matched against command patterns under
-the `mcp' kind."
+the `mcp' kind.  For fetch, URL patterns are matched against
+allow/ask lists; deny patterns are handled separately by
+`agent-shell--permission-should-deny-p'."
   (let* ((kind-sym (intern kind))
          (canonical (pcase kind-sym
                       ('edit 'write)
@@ -218,12 +239,27 @@ the `mcp' kind."
             (or (member server-name mcp-allow)
                 (member "*" mcp-allow)
                 (agent-shell--mcp-tool-allowed-p title))))))
+     ((eq kind-sym 'fetch)
+      (let ((url (agent-shell--permission-extract-fetch-url title)))
+        (cond
+         ((and ask-patterns
+               (agent-shell--permission-single-command-match-p url ask-patterns))
+          (seq-some
+           (lambda (pattern)
+             (and (not (string= pattern "*"))
+                  (agent-shell--permission-single-command-match-p
+                   url (list pattern))))
+           allow-patterns))
+         (t (and allow-patterns
+                 (agent-shell--permission-single-command-match-p url allow-patterns))))))
      (t nil))))
 
 (defun agent-shell-make-permission (permissions)
   "Return a permission responder function using declarative PERMISSIONS.
-PERMISSIONS is an alist with `allow' and `ask' keys, each containing
-kind-specific pattern lists matching Claude Code settings.json format."
+PERMISSIONS is an alist with `allow', `ask', and `deny' keys, each
+containing kind-specific pattern lists.  `deny' auto-rejects matching
+requests.  `ask' falls through to the interactive UI.  `allow'
+auto-approves."
   (lambda (permission)
     (let* ((tool-call (map-elt permission :tool-call))
            (kind (map-elt tool-call :kind))
@@ -233,12 +269,22 @@ kind-specific pattern lists matching Claude Code settings.json format."
            (allow-choice (seq-find
                           (lambda (opt)
                             (equal (map-elt opt :kind) "allow_once"))
-                          (map-elt permission :options))))
-      (when (and (agent-shell--permission-should-allow-p kind title permissions cwd)
-                 allow-choice)
+                          (map-elt permission :options)))
+           (reject-choice (seq-find
+                           (lambda (opt)
+                             (equal (map-elt opt :kind) "reject_once"))
+                           (map-elt permission :options))))
+      (cond
+       ((and (agent-shell--permission-should-deny-p kind title permissions cwd)
+             reject-choice)
+        (funcall (map-elt permission :respond)
+                 (map-elt reject-choice :option-id))
+        t)
+       ((and (agent-shell--permission-should-allow-p kind title permissions cwd)
+             allow-choice)
         (funcall (map-elt permission :respond)
                  (map-elt allow-choice :option-id))
-        t))))
+        t)))))
 
 (defun agent-shell-session-file ()
   "Copy the current session transcript file path to the kill ring."
@@ -337,7 +383,8 @@ kind-specific pattern lists matching Claude Code settings.json format."
                       "git log *" "git show *" "git branch *"
                       "git reflog *" "git rev-parse *" "git remote -v *"
                       "git config *" "git grep *"))
-          (mcp . ("*")))
+          (mcp . ("*"))
+          (fetch . ("*")))
          (ask
           (execute . ("sudo *" "ssh *" "git *" "kill *" "emacsclient *" "emacs-version"))
           (mcp . ("playwright-browser"))))))
