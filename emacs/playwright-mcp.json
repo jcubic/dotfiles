@@ -1,0 +1,8 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "launchOptions": {
+      "args": ["--remote-debugging-port=9222"]
+    }
+  }
+}
