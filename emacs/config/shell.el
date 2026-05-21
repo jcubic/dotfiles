@@ -63,8 +63,8 @@
               (lexical-let ((buff buff))
                 (set-process-sentinel proc
                                       (lambda (process event)
-                                        (if (string= event "finished\n")
-                                            (kill-buffer buff))))))))
+                                        (unless (process-live-p process)
+                                          (kill-buffer buff)))))))
 
 (defmacro ssh (name server)
   "macro creates function that connect to ssh by name"
