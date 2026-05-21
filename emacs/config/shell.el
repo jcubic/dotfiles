@@ -48,23 +48,25 @@
   `(set-face-attribute ',(intern (concat "term-color-" (symbol-name name)))
                        nil :foreground ,color))
 
-(add-hook 'term-exec-hook
-          (lambda ()
-            ;; XTerm colors
-            ;;(macroexpand '(term-color blue "#5555FF"))
-            (term-color blue "#5555FF")
-            (term-color green "#55FF55")
-            (term-color red "#FF5555")
-            (term-color magenta "#FF55FF")
-            (term-color cyan "#FF55FF")
-            (term-color yellow "#FFFF55")
-            (let* ((buff (current-buffer))
-                   (proc (get-buffer-process buff)))
-              (lexical-let ((buff buff))
-                (set-process-sentinel proc
-                                      (lambda (process event)
-                                        (unless (process-live-p process)
-                                          (kill-buffer buff)))))))
+(defun term-exec-handler ()
+  (interactive)
+  ;; XTerm colors
+  ;;(macroexpand '(term-color blue "#5555FF"))
+  (term-color blue "#5555FF")
+  (term-color green "#55FF55")
+  (term-color red "#FF5555")
+  (term-color magenta "#FF55FF")
+  (term-color cyan "#FF55FF")
+  (term-color yellow "#FFFF55")
+  (let* ((buff (current-buffer))
+         (proc (get-buffer-process buff)))
+    (lexical-let ((buff buff))
+      (set-process-sentinel proc
+                            (lambda (process event)
+                              (unless (process-live-p process)
+                                (kill-buffer buff)))))))
+
+(add-hook 'term-exec-hook 'term-exec-handler)
 
 (defmacro ssh (name server)
   "macro creates function that connect to ssh by name"
