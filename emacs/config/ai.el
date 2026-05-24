@@ -161,17 +161,34 @@ TITLE is typically \"Fetch https://...\"; returns just the URL."
       (match-string 1 title)
     title))
 
-(defun agent-shell--permission-should-deny-p (kind title permissions _cwd)
+(defun agent-shell--permission-should-deny-p (kind title permissions cwd)
   "Return non-nil if a tool of KIND with TITLE should be auto-denied.
-Checks `deny' patterns in PERMISSIONS.  Currently supports `fetch'."
+Checks `deny' patterns in PERMISSIONS for read, write, execute, and fetch."
   (let* ((kind-sym (intern kind))
-         (deny-patterns (cdr (assq kind-sym (cdr (assq 'deny permissions))))))
+         (canonical (pcase kind-sym
+                      ('edit 'write)
+                      ('search 'read)
+                      (_ kind-sym)))
+         (deny-patterns (cdr (assq canonical (cdr (assq 'deny permissions))))))
     (when deny-patterns
-      (pcase kind-sym
+      (pcase canonical
         ('fetch
          (agent-shell--permission-single-command-match-p
           (agent-shell--permission-extract-fetch-url title) deny-patterns))
-        (_ nil)))))
+        ((or 'read 'write)
+         (let* ((paths (agent-shell--extract-command-paths title))
+                (path (or (car paths)
+                          (when (string-match " \\(.+\\)$" title)
+                            (expand-file-name (match-string 1 title) cwd))
+                          (expand-file-name title cwd))))
+           (agent-shell--permission-path-match-p path deny-patterns cwd)))
+        ('execute
+         (let ((sub-commands (agent-shell--split-compound-command title)))
+           (seq-some
+            (lambda (cmd)
+              (agent-shell--permission-single-command-match-p
+               (string-trim cmd) deny-patterns))
+            sub-commands)))))))
 
 (defun agent-shell--permission-should-allow-p (kind title permissions cwd)
   "Return non-nil if a tool of KIND with TITLE should be auto-allowed.
@@ -385,6 +402,8 @@ auto-approves."
                       "git config *" "git grep *"))
           (mcp . ("*"))
           (fetch . ("*")))
+         (deny
+          (execute . ("node -e *" "python -c *" "bash -c *")))
          (ask
           (execute . ("sudo *" "ssh *" "git *" "kill *" "emacsclient *" "emacs-version"))
           (mcp . ("playwright-browser"))))))
