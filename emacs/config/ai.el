@@ -379,13 +379,17 @@ auto-approves."
          (args . ("-y" "@nicepkg/jina-reader-mcp"))
          (env . nil))
         ((name . "playwright")
-         (command . "npx")
-         (args . ("-y" "@playwright/mcp@latest" "--config" "~/projects/jcubic/dotfiles/emacs/playwright-mcp.json"))
+         (command . "playwright-mcp")
+         (args . ("--name" "Playwright-Headless" "--config" ,(expand-file-name "~/projects/jcubic/dotfiles/emacs/playwright-mcp.json")))
          (env . nil))
         ((name . "playwright-browser")
-         (command . "npx")
-         (args . ("-y" "@playwright/mcp@latest" "--extension"))
-         (env . nil))))
+         (command . "playwright-mcp")
+         (args . ("--name" "Playwright-Browser" "--extension"))
+         (env . nil))
+        ((name . "wikidata")
+         (type . "http")
+         (url . "https://wd-mcp.wmcloud.org/mcp/")
+         (headers . nil))))
 
 (setq agent-shell-permission-responder-function
       (agent-shell-make-permission
