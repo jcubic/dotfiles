@@ -1,0 +1,109 @@
+
+[user]
+	name = Jakub Jankiewicz
+	email = jcubic@jcubic.pl
+	signingkey = BC653F92314B398B5E1E0BC7A58EE6F131F83013
+
+[alias]
+	lg1 = log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)' --all
+	lg2 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --all
+	lg = !"git lg1"
+	rm-tag = !sh -c 'git tag -d "$1" && git push origin :refs/tags/"$1"' -
+	push-tag = !sh -c 'git tag "$1" && git push origin --tags' -
+	modified = diff --name-status master..HEAD
+	open = "!f() { URL=$(git config remote.origin.url | sed -e 's%^git@[^:]\\+:%https://github.com/%' -e 's/.git$//'); xdg-open $URL; }; f"
+	diff = "--no-pager branch"
+	url = config --get remote.origin.url
+	dad = !curl https://icanhazdadjoke.com/ && echo
+	user = !echo \"$(git branch)\"
+	ignore = update-index --assume-unchanged
+	unignore = update-index --no-assume-unchanged
+	empty = commit --allow-empty --allow-empty-message -m \"\"
+	same = commit --amend --no-edit
+	first = !git log -1 $(git rev-list --max-parents=0 HEAD)
+[push]
+	default = current
+	autoSetupRemote = true
+	followTags = true
+[core]
+	pager = less -FRXK
+	editor = nano
+	excludesFile = ~/.gitignore
+
+[commit]
+  gpgsign = true
+
+[gpg]
+	program = gpg2
+
+[init]
+	defaultBranch = master
+
+[tag]
+  sort = version:refname
+
+[interactive]
+  diffFilter = delta --color-only --features=interactive
+
+[column]
+  ui = auto
+
+[pager]
+  diff = true
+  log = delta
+  reflog = delta
+  show = delta
+
+[diff]
+  #tool = difftastic
+  #external = difft
+  algorithm = histogram
+  colorMoved = plain
+  mnemonicPrefix = true
+  renames = true
+
+[difftool]
+  prompt = false
+
+[difftool "difftastic"]
+  cmd = difft "$LOCAL" "$REMOTE"
+
+[pager]
+  difftool = true
+
+[delta]
+  features = decorations
+
+[delta "interactive"]
+  keep-plus-minus-markers = false
+
+[delta "decorations"]
+  commit-decoration-style = blue ol
+  commit-style = raw
+  file-style = omit
+  hunk-header-decoration-style = blue box
+  hunk-header-file-style = red
+  hunk-header-line-number-style = "#067a00"
+  hunk-header-style = file line-number syntax
+
+[filter "lfs"]
+  process = git-lfs filter-process
+  required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+
+[branch]
+  sort = -committerdate
+
+[rerere]
+	enabled = true
+
+[grep]
+  lineNumber = true
+  patternType = perl
+
+[merge]
+  conflictstyle = zdiff3
+
+[url "git@github.com:"]
+  insteadOf = https://github.com/
