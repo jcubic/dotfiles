@@ -39,7 +39,7 @@
 ;; :: DEFAULT BROWSER
 ;; --------------------------------------------------------------------------
 (setq browse-url-browser-function 'browse-url-generic
-      browse-url-generic-program "brave-browser")
+      browse-url-generic-program "helium")
 
 ;; --------------------------------------------------------------------------
 ;; :: NOTIFICATIONS
