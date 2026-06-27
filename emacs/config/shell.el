@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 ;; async-shell-command
 (defun async-exec-command (command &rest success)
   (interactive "MExecute command: ")

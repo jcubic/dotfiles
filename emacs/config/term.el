@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (defun fix-commit-output (output)
   (replace-regexp-in-string "\033\\[[0-9]+[GK]" "." output))
 

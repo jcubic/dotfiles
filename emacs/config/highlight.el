@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (require 'highlight-current-line)
 (require 'highlight-chars)
 (require 'highlight-symbol)

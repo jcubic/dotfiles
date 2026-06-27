@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (require 'erc)
 (require 'tls)
 (require 'erc-match)

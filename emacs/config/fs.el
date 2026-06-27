@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (defun test (&rest args)
   (with-temp-buffer
     (eq (apply 'call-process "test" nil (current-buffer) nil args) 0)))

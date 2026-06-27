@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (autoload 'R-mode "ess-site.el" "ESS" t)
 (add-to-list 'auto-mode-alist '("\\.R$" . R-mode))
 (setq inferior-ess-r-program "/usr/bin/R")

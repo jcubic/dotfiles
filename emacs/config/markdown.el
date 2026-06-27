@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (require 'poly-markdown)
 (require 'flymake-languagetool)
 

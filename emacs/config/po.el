@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (defun po-wrap ()
   "Filter current po-mode buffer through `msgcat' tool to wrap all lines."
   (interactive)

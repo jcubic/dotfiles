@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (require 'emmet-mode)
 (require 'web-mode)
 (require 'company)
