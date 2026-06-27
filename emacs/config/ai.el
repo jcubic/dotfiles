@@ -399,7 +399,7 @@ auto-approves."
        '((allow
           (read . ("~/projects/" "~/.claude/" "~/.agent-shell/" "~/.mutimon/"
                    "~/.horavox/" "~/.emacs" "~/.bashrc" "~/bin/" "//tmp/"
-                   "~/.emacs.d/"))
+                   "~/.emacs.d/" "//dev/" "//dev/null"))
           (write . ("~/.mutimon/" "~/.horavox/" "//tmp/" "/"))
           (execute . ("*"
                       "git checkout *" "git status *" "git diff *"
@@ -410,7 +410,8 @@ auto-approves."
           (mcp . ("*"))
           (fetch . ("*")))
          (deny
-          (execute . ("node -e *" "python -c *" "bash -c *")))
+          (execute . ("node -e *" "python -c *" "bash -c *" "sh -c *")))
          (ask
-          (execute . ("sudo *" "ssh *" "git *" "kill *" "emacsclient *" "emacs-version"))
+          (execute . ("sudo *" "ssh *" "git *" "kill *" "emacsclient *" "emacs-version"
+                      "bash" "bash *" "sh" "sh *"))
           (mcp . ("playwright-browser"))))))
