@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (toggle-debug-on-error)
 
 (setq vterm-max-scrollback 10000)
@@ -7,6 +9,25 @@
 (setq confirm-kill-processes nil)
 (setq scroll-error-top-bottom t)
 (setq require-final-newline t)
+
+
+;; --------------------------------------------------------------------------
+;; Theme
+;; --------------------------------------------------------------------------
+(setq dracula-alternate-mode-line-and-minibuffer t)
+
+(load-theme 'dracula t)
+
+(with-eval-after-load 'dracula-theme
+  (set-face-attribute 'mode-line nil :background "#3FB6ED" :foreground "#ffffff" :box nil :height 130)
+  (set-face-attribute 'mode-line-inactive nil :background "#44475a" :foreground "#8B8B8B" :box nil :height 130)
+
+  (set-face-attribute 'isearch nil :background nil :foreground "#f1fa8c" :weight 'bold :underline t)
+  (set-face-attribute 'lazy-highlight nil :background nil :foreground "#bd93f9" :underline t)
+  (set-face-attribute 'match nil :background nil :foreground "#f1fa8c" :weight 'bold)
+
+  (set-face-attribute 'minibuffer-prompt nil :background nil :foreground "#f1fa8c" :weight 'bold)
+  (set-face-attribute 'minibuffer-prompt nil :box nil))
 
 ;; --------------------------------------------------------------------------
 ;; :: DEFAULT BROWSER
