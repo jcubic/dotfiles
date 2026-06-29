@@ -4,8 +4,8 @@
 (require 'flymake-languagetool)
 
 (setq flymake-languagetool-server-jar nil)
-(setq flymake-languagetool-url "https://api.languagetool.org")
-(define-key flymake-mode-map (kbd "C-c C-a") 'flymake-languagetool-correct-dwim)
+(if (not (string-equal flymake-languagetool-api-username "jcubic@jcubic.pl"))
+    (setq flymake-languagetool-url "https://api.languagetool.org"))
 
 (defun markdown ()
   (interactive)
