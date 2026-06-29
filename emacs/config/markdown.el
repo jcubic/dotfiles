@@ -54,7 +54,7 @@
   "Guard against stale match-data from polymode re-fontification."
     (condition-case nil
         (funcall orig-fun last)
-      (wrong-type-argument nil)))
+      ((wrong-type-argument args-out-of-range) nil)))
 
 (advice-add 'markdown-fontify-headings :around 'markdown-fontify-headings-fix)
 
