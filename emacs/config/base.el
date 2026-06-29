@@ -222,3 +222,9 @@
 
 
 (global-set-key (kbd "C-c f") 'fill-paragraph)
+
+;; --------------------------------------------------------------------------
+;; Custom keyboard prefix
+;; --------------------------------------------------------------------------
+(define-prefix-command 'my-prefix-map)
+(global-set-key (kbd "C-z") 'my-prefix-map)

@@ -57,3 +57,10 @@
       (wrong-type-argument nil)))
 
 (advice-add 'markdown-fontify-headings :around 'markdown-fontify-headings-fix)
+
+;; -----------------------------------------------------------------------------
+;; Key binding
+;; -----------------------------------------------------------------------------
+(define-key my-prefix-map (kbd "<left>") #'flymake-goto-prev-error)
+(define-key my-prefix-map (kbd "<right>") #'flymake-goto-next-error)
+(define-key my-prefix-map (kbd "SPC") #'flymake-languagetool-correct-dwim)
