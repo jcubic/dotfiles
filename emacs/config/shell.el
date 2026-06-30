@@ -36,7 +36,7 @@
 
  (defun remote-term (new-buffer-name cmd &rest switches)
    (interactive)
-   (setq term-ansi-buffer-name (concat "*" new-buffer-name "*"))
+   (setq term-ansi-buffer-name (concat "*ssh:" new-buffer-name "*"))
    (setq term-ansi-buffer-name (generate-new-buffer-name term-ansi-buffer-name))
    (setq term-ansi-buffer-name
          (apply 'make-term term-ansi-buffer-name cmd nil switches))
@@ -70,12 +70,12 @@
 
 (add-hook 'term-exec-hook 'term-exec-handler)
 
-(defmacro ssh (name server)
+(defmacro ssh (name &optional server)
   "macro creates function that connect to ssh by name"
   (let ((str (symbol-name name)))
     `(defun ,name ()
        (interactive)
-       (remote-term ,str "ssh" ,server))))
+       (remote-term ,str "ssh" ,(or server str)))))
 
 (defun send-raw-key-fun (str)
   (lexical-let ((str str))
