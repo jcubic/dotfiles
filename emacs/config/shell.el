@@ -98,6 +98,12 @@
                   (char-to-string event)))
            (read-kbd-macro str)))
 
+(defun toggle-ansi-term-mode ()
+  "Switch ansi-term btween character and line mode."
+  (interactive)
+  (if (term-in-char-mode)
+      (term-line-mode)
+    (term-char-mode)))
 
 (add-hook 'term-mode-hook
           (lambda()
@@ -115,6 +121,9 @@
             (define-key term-raw-map (kbd "C-c x") (send-raw-key-fun "C-x"))
             ;; cancel
             (define-key term-raw-map (kbd "C-c c") (send-raw-key-fun "C-c"))
+
+            (define-key term-raw-map (kbd "C-S-SPC") 'toggle-ansi-term-mode)
+            (define-key term-mode-map (kbd "C-S-SPC") 'toggle-ansi-term-mode)
 
             ;; vi
             ;; (define-key term-raw-map (kbd "C-c <ESC>")
