@@ -69,6 +69,46 @@
 (add-hook 'agent-shell-mode-hook 'agent-shell-hook)
 
 ;; --------------------------------------------------------------------------
+;; :: AGENT-SHELL TURN-COMPLETE NOTIFICATION
+;; --------------------------------------------------------------------------
+
+(defun agent-shell--buffer-focused-p (buffer)
+  "Return non-nil if BUFFER is being actively viewed.
+That means BUFFER is the selected window's buffer of a frame that
+currently has input focus.  A merely visible-but-unfocused frame
+\(e.g. while you are looking at the browser) does not count."
+  (seq-some
+   (lambda (frame)
+     (and (frame-focus-state frame)
+          (eq (window-buffer (frame-selected-window frame)) buffer)))
+   (frame-list)))
+
+(defun agent-shell-announce-turn-complete (_event)
+  "Announce via `vox' when an Agent Shell turn completes.
+Runs inside the session buffer (see `agent-shell--emit-event'), so
+`current-buffer' is the shell.  The announcement is skipped only while
+you are actively viewing the session; it still fires when the frame is
+visible but unfocused (e.g. while you are in the browser).  The
+announced directory is the session CWD (the DIR passed to `claude')."
+  (let ((buffer (current-buffer)))
+    (unless (agent-shell--buffer-focused-p buffer)
+      (let* ((dir (file-name-nondirectory
+                   (directory-file-name (agent-shell-cwd))))
+             (msg (format "Agent %s czeka" dir)))
+        (start-process "agent-shell-vox" nil
+                       "vox" "now" "--message" msg)))))
+
+(defun agent-shell-subscribe-turn-complete ()
+  (interactive)
+  "Subscribe the current Agent Shell buffer to the `turn-complete' event."
+  (agent-shell-subscribe-to
+   :shell-buffer (current-buffer)
+   :event 'turn-complete
+   :on-event #'agent-shell-announce-turn-complete))
+
+(add-hook 'agent-shell-mode-hook 'agent-shell-subscribe-turn-complete)
+
+;; --------------------------------------------------------------------------
 ;; :: AGENT-SHELL PERMISSION SYSTEM
 ;; --------------------------------------------------------------------------
 
