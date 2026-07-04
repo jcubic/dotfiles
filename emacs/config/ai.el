@@ -453,7 +453,7 @@ auto-approves."
           (read . ("~/projects/" "~/.claude/" "~/.agent-shell/" "~/.mutimon/"
                    "~/.horavox/" "~/.emacs" "~/.bashrc" "~/bin/" "//tmp/"
                    "/usr/local/share/emacs/" "~/.local/share/icons/" "~/.emacs.d/"
-                   "//dev/" "//dev/null"))
+                   "//dev/" "//dev/null" "~/.config/nvm/"))
           (write . ("~/.mutimon/" "~/.horavox/" "//tmp/" "/"
                     "~/.clarity-icons/" "~/.local/share/icons/Clarity/"))
           (execute . ("*"
