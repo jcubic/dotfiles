@@ -38,7 +38,8 @@
 (setq agent-shell-preferred-agent-config
       (agent-shell-anthropic-make-claude-code-config))
 
-;;(setq agent-shell-preferred-agent-config (agent-shell-opencode-make-agent-config))
+;; (setq agent-shell-preferred-agent-config
+;;       (agent-shell-opencode-make-agent-config))
 
 (setq agent-shell-markdown-render-function #'agent-shell-markdown-replace-markup)
 (setq agent-shell-highlight-blocks t)
