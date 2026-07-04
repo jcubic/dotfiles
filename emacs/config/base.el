@@ -198,7 +198,7 @@
 ;; :: CLIPBOARD/YANKING
 ;; --------------------------------------------------------------------------
 (setq x-select-enable-clipboard t)
-(setq mouse-drag-copy-region 'non-empty)
+(setq mouse-drag-copy-region t)
 (setq x-select-enable-clipboard-manager nil)
 ;; (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
 (setq interprogram-paste-function 'x-selection-value)
