@@ -96,14 +96,17 @@
 ;; --------------------------------------------------------------------------
 
 (defun agent-shell--buffer-focused-p (buffer)
-  "Return non-nil if BUFFER is being actively viewed.
-That means BUFFER is the selected window's buffer of a frame that
-currently has input focus.  A merely visible-but-unfocused frame
-\(e.g. while you are looking at the browser) does not count."
+  "Return non-nil if BUFFER is visible in the frame that has input focus.
+Any window of the focused frame that displays BUFFER counts -- it need
+not be the selected window.  So if you are editing in one window while
+the Agent Shell is visible in another window of the same focused frame,
+this returns non-nil.  It returns nil when BUFFER is hidden, or shown
+only in a frame that lacks input focus (e.g. while you are in the
+browser)."
   (seq-some
    (lambda (frame)
      (and (frame-focus-state frame)
-          (eq (window-buffer (frame-selected-window frame)) buffer)))
+          (get-buffer-window buffer frame)))
    (frame-list)))
 
 (defun agent-shell-announce-turn-complete (_event)
