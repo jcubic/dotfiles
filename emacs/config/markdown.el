@@ -58,6 +58,14 @@
 
 (advice-add 'markdown-fontify-headings :around 'markdown-fontify-headings-fix)
 
+(defun markdown-fontify-blockquotes-fix (orig-fun last)
+  "Guard against stale match-data from polymode re-fontification."
+    (condition-case nil
+        (funcall orig-fun last)
+      ((wrong-type-argument args-out-of-range) nil)))
+
+(advice-add 'markdown-fontify-blockquotes :around 'markdown-fontify-blockquotes-fix)
+
 ;; -----------------------------------------------------------------------------
 ;; Key binding
 ;; -----------------------------------------------------------------------------
