@@ -20,6 +20,12 @@
 ;;           (execute . ("sudo *" "ssh *" "git *" "kill *" "emacsclient *"))
 ;;           (mcp . ("playwright-browser")))))) ;; MCP that use my own browser
 
+;; load latest Agent-Shell from source
+(dolist (path '("/home/kuba/projects/jcubic/agent-shell"
+                "/home/kuba/projects/jcubic/shell-maker"
+                "/home/kuba/projects/jcubic/acp.el"))
+   (add-to-list 'load-path path))
+
 (require 'acp)
 (require 'agent-shell)
 
