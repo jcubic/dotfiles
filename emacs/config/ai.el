@@ -350,6 +350,21 @@ allow/ask lists; deny patterns are handled separately by
                  (agent-shell--permission-single-command-match-p url allow-patterns))))))
      (t nil))))
 
+(defun agent-shell-announce-permission-request ()
+  "Announce via `vox' when an Agent Shell session asks for permission.
+The permission responder is invoked inside the session buffer, so
+`current-buffer' is the shell.  As with `agent-shell-announce-turn-complete',
+the announcement is skipped only while you are actively viewing the session;
+it still fires when the frame is visible but unfocused.  The announced
+directory is the session CWD."
+  (let ((buffer (current-buffer)))
+    (unless (agent-shell--buffer-focused-p buffer)
+      (let* ((dir (file-name-nondirectory
+                   (directory-file-name (agent-shell-cwd))))
+             (msg (format "Agent %s pyta o pozwolenie" dir)))
+        (start-process "agent-shell-vox" nil
+                       "vox" "now" "--message" msg)))))
+
 (defun agent-shell-make-permission (permissions)
   "Return a permission responder function using declarative PERMISSIONS.
 PERMISSIONS is an alist with `allow', `ask', and `deny' keys, each
@@ -380,7 +395,13 @@ auto-approves."
              allow-choice)
         (funcall (map-elt permission :respond)
                  (map-elt allow-choice :option-id))
-        t)))))
+        t)
+       ;; Neither auto-denied nor auto-allowed: the request falls through to
+       ;; the interactive UI, i.e. the agent is asking you.  Notify (unless
+       ;; you are looking at the session) and return nil so the UI still runs.
+       (t
+        (agent-shell-announce-permission-request)
+        nil)))))
 
 (defun agent-shell-session-file ()
   "Copy the current session transcript file path to the kill ring."
