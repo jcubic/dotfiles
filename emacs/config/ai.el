@@ -44,8 +44,7 @@
 (setq agent-shell-markdown-render-function #'agent-shell-markdown-replace-markup)
 (setq agent-shell-highlight-blocks t)
 
-;;(setq agent-shell-anthropic-default-model-id "claude-opus-4-6")
-(setq agent-shell-anthropic-default-model-id "claude-opus-4-8")
+(setq agent-shell-anthropic-default-model-id "opus[1m]")
 
 (setq agent-shell-busy-indicator-frames 'dots-block)
 (setq agent-shell-context-sources nil)
@@ -68,6 +67,29 @@
   (local-set-key [C-down] 'forward-paragraph))
 
 (add-hook 'agent-shell-mode-hook 'agent-shell-hook)
+
+
+
+;; --------------------------------------------------------------------------
+;; FIX THINKING
+;; --------------------------------------------------------------------------
+;; temporary hack to enable Claude Code thinking
+
+(defun add-acp-config (args)
+  (if (plist-member args :meta)
+      args
+    (append args
+            '(:meta ((claudeCode
+                      . ((options
+                          . ((thinking
+                              . ((type . "adaptive")
+                                 (display . "summarized"))))))))))))
+
+(with-eval-after-load 'acp
+  (advice-add
+   'acp-make-session-new-request :filter-args
+   'add-acp-config
+   '((name . agent-shell/summarized-thinking))))
 
 ;; --------------------------------------------------------------------------
 ;; :: AGENT-SHELL TURN-COMPLETE NOTIFICATION
