@@ -452,7 +452,8 @@ auto-approves."
        '((allow
           (read . ("~/projects/" "~/.claude/" "~/.agent-shell/" "~/.mutimon/"
                    "~/.horavox/" "~/.emacs" "~/.bashrc" "~/bin/" "//tmp/"
-                   "~/.emacs.d/" "//dev/" "//dev/null"))
+                   "/usr/local/share/emacs/" "~/.local/share/icons/" "~/.emacs.d/"
+                   "//dev/" "//dev/null"))
           (write . ("~/.mutimon/" "~/.horavox/" "//tmp/" "/"
                     "~/.clarity-icons/" "~/.local/share/icons/Clarity/"))
           (execute . ("*"
