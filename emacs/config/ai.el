@@ -43,7 +43,9 @@
 (setq agent-shell-markdown-render-function #'agent-shell-markdown-replace-markup)
 (setq agent-shell-highlight-blocks t)
 
-(setq agent-shell-anthropic-default-model-id "claude-opus-4-6")
+;;(setq agent-shell-anthropic-default-model-id "claude-opus-4-6")
+(setq agent-shell-anthropic-default-model-id "claude-fable-5")
+
 (setq agent-shell-busy-indicator-frames 'dots-block)
 (setq agent-shell-context-sources nil)
 (setq acp-logging-enabled t)
