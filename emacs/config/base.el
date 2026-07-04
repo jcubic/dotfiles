@@ -42,6 +42,8 @@
 (setq browse-url-browser-function 'browse-url-generic
       browse-url-generic-program "helium")
 
+(setenv "BROWSER" "helium")
+
 ;; --------------------------------------------------------------------------
 ;; :: NOTIFICATIONS
 ;; --------------------------------------------------------------------------
@@ -145,13 +147,9 @@
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 
-(setenv "NODE_NO_READLINE" "1")
-(setenv "BROWSER" "brave-browser")
-
-(setq browse-url-browser-function 'browse-url-generic
-      browse-url-generic-program "brave-browser")
-
 (setq inferior-js-program-command "node --interactive")
+
+(setenv "NODE_NO_READLINE" "1")
 
 ;; fix bug with history and killed buffers
 (add-hook 'kill-buffer-hook
