@@ -453,7 +453,8 @@ auto-approves."
           (read . ("~/projects/" "~/.claude/" "~/.agent-shell/" "~/.mutimon/"
                    "~/.horavox/" "~/.emacs" "~/.bashrc" "~/bin/" "//tmp/"
                    "~/.emacs.d/" "//dev/" "//dev/null"))
-          (write . ("~/.mutimon/" "~/.horavox/" "//tmp/" "/"))
+          (write . ("~/.mutimon/" "~/.horavox/" "//tmp/" "/"
+                    "~/.clarity-icons/" "~/.local/share/icons/Clarity/"))
           (execute . ("*"
                       "git checkout *" "git status *" "git diff *"
                       "git clone *" "git ls-tree *" "git ls-files *"
