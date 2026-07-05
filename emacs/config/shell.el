@@ -129,3 +129,9 @@
             ;; (define-key term-raw-map (kbd "C-c <ESC>")
             ;;   (send-raw-key-fun "<ESC>"))
             (define-key term-raw-map (kbd "M-x") 'execute-extended-command)))
+
+;; --------------------------------------------------------------------------
+;; MY SSH SERVERS
+;; --------------------------------------------------------------------------
+(ssh mydevil)
+(ssh toolforge)
