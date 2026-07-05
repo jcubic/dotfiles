@@ -15,8 +15,6 @@
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
 
-(flymake-languagetool-load)
-
 (defun setup-tide-mode ()
   (interactive)
   (tide-setup)

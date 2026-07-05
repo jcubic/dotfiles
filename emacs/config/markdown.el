@@ -1,11 +1,16 @@
 ;;; -*- lexical-binding: nil; -*-
 
 (require 'poly-markdown)
-(require 'flymake-languagetool)
 
-(setq flymake-languagetool-server-jar nil)
-(if (not (string-equal flymake-languagetool-api-username "jcubic@jcubic.pl"))
-    (setq flymake-languagetool-url "https://api.languagetool.org"))
+(add-to-list 'load-path "/home/kuba/projects/jcubic/alt/")
+
+(require 'alt)
+
+(setq alt-languagetool-server-jar nil)
+(if (not (string-equal alt-languagetool-api-username "jcubic@jcubic.pl"))
+    (setq alt-languagetool-url "https://api.languagetool.org"))
+
+(setq alt-correct-style 'company)
 
 (defun markdown ()
   (interactive)
@@ -16,20 +21,11 @@
             (string-match-p "blog/me" name)
             (string-match-p "wikizeit" name)
             (string-match-p "/pl/" name)))
-      (setq-local flymake-languagetool-language "pl-PL")
-    (setq-local flymake-languagetool-language "en-US"))
-  (flymake-languagetool-load)
-  (flymake-mode)
-  )
-
-(defun lang (lang)
-  (interactive "sLanguage: ")
-  (ispell-change-dictionary lang)
-  (flyspell-buffer))
-
-(defun english ()
-  (interactive)
-  (lang "english"))
+      (setq-local alt-language "pl-PL")
+    (setq-local alt-language "en-US"))
+  (local-set-key (kbd "C-S-SPC") 'alt-correct-at-point)
+  (company-mode +1)
+  (alt-mode))
 
 (defun flymake-err-at (pos)
   (let ((overlays (overlays-at pos)))
