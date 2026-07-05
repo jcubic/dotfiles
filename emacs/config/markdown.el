@@ -24,6 +24,9 @@
       (setq-local alt-language "pl-PL")
     (setq-local alt-language "en-US"))
   (local-set-key (kbd "C-S-SPC") 'alt-correct-at-point)
+  (local-set-key (kbd "C-:") 'alt-correct-auto)
+  (local-set-key (kbd "C-S-p") 'flymake-goto-prev-error)
+  (local-set-key (kbd "C-S-n") 'flymake-goto-next-error)
   (company-mode +1)
   (alt-mode))
 
