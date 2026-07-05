@@ -199,10 +199,17 @@
 ;; :: CLIPBOARD/YANKING
 ;; --------------------------------------------------------------------------
 (setq x-select-enable-clipboard t)
-(setq mouse-drag-copy-region t)
+(setq kill-read-only-ok t)
+
+;; 'non-empty (not t) so empty/degenerate drags & right-clicks don't push ""
+;; onto the kill ring.  Requires the mouse-save-then-kill redefinition at the
+;; end of this file (upstream's non-empty guard for right-click is inverted).
+(setq mouse-drag-copy-region 'non-empty)
 (setq x-select-enable-clipboard-manager nil)
-;; (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
-(setq interprogram-paste-function 'x-selection-value)
+
+(if (fboundp 'x-cut-buffer-or-selection-value)
+    (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
+  (setq interprogram-paste-function 'x-selection-value))
 (delete-selection-mode t)
 
 (add-to-list 'yank-excluded-properties 'font)
@@ -230,3 +237,138 @@
 ;; --------------------------------------------------------------------------
 (define-prefix-command 'my-prefix-map)
 (global-set-key (kbd "C-z") 'my-prefix-map)
+
+;; --------------------------------------------------------------------------
+;; FIX: mouse-save-then-kill empty-region kill clobbers the kill ring
+;; --------------------------------------------------------------------------
+;; In stock Emacs (checked 30.2 and 32.0.50) the `mouse-drag-copy-region'
+;; = `non-empty' guard in the THIRD cond-branch of `mouse-save-then-kill' is
+;; inverted vs the drag path and the docstring:
+;;   drag path  (mouse.el:1660):  (or (not (eq ... 'non-empty)) (/= beg end))
+;;   this branch (mouse.el:2391): (or (not (eq ... 'non-empty)) (not (/= (mark t) (point))))
+;; The stray `not' makes it copy ONLY when the region is empty, so a right-click
+;; on a degenerate/empty region runs (kill-new "") and clobbers the kill ring
+;; (and the X clipboard via interprogram-cut) -- which breaks mouse copy in
+;; read-only buffers (agent-shell, *Backtrace*, ...).  Needs `mouse-drag-copy-region'
+;; = `non-empty' (set above) to take effect.  Verbatim copy of the 32.0.50
+;; definition with the single `not' removed (see FIX marker).  Delete once fixed
+;; upstream.
+(defun mouse-save-then-kill (click)
+  "Set the region according to CLICK; the second time, kill it.
+CLICK should be a mouse click event.
+
+If the region is inactive, activate it temporarily.  Set mark at
+the original point, and move point to the position of CLICK.
+
+If the region is already active, adjust it.  Normally, do this by
+moving point or mark, whichever is closer, to CLICK.  But if you
+have selected whole words or lines, move point or mark to the
+word or line boundary closest to CLICK instead.
+
+If `mouse-drag-copy-region' is non-nil, this command also saves the
+new region to the kill ring (replacing the previous kill if the
+previous region was just saved to the kill ring).
+
+If this command is called a second consecutive time with the same
+CLICK position, kill the region (or delete it
+if `mouse-drag-copy-region' is non-nil)."
+  (interactive "e")
+  (mouse-minibuffer-check click)
+  (let* ((posn     (event-start click))
+         (click-pt (posn-point posn))
+         (window   (posn-window posn))
+         (buf      (window-buffer window))
+         ;; Don't let a subsequent kill command append to this one.
+         (this-command this-command)
+         ;; Check if the user has multi-clicked to select words/lines.
+         (click-count
+          (if (and (eq mouse-selection-click-count-buffer buf)
+                   (with-current-buffer buf (mark t)))
+              mouse-selection-click-count
+            0)))
+    (cond
+     ((not (numberp click-pt)) nil)
+     ;; If the user clicked without moving point, kill the region.
+     ;; This also resets `mouse-selection-click-count'.
+     ((and (eq last-command 'mouse-save-then-kill)
+           (eq click-pt mouse-save-then-kill-posn)
+           (eq window (selected-window)))
+      (if mouse-drag-copy-region
+          ;; Region already saved in the previous click;
+          ;; don't make a duplicate entry, just delete.
+          (funcall region-extract-function 'delete-only)
+        (kill-region (mark t) (point) 'region))
+      (setq mouse-selection-click-count 0)
+      (setq mouse-save-then-kill-posn nil))
+
+     ;; Otherwise, if there is a suitable region, adjust it by moving
+     ;; one end (whichever is closer) to CLICK-PT.
+     ((or (with-current-buffer buf (region-active-p))
+          (and (eq window (selected-window))
+               (mark t)
+               (or (and (eq last-command 'mouse-save-then-kill)
+                        mouse-save-then-kill-posn)
+                   (and (memq last-command '(mouse-drag-region
+                                             mouse-set-region))
+                        (or mark-even-if-inactive
+                            (not transient-mark-mode))))))
+      (select-window window)
+      (let* ((range (mouse-start-end click-pt click-pt click-count)))
+        (if (< (abs (- click-pt (mark t)))
+               (abs (- click-pt (point))))
+            (set-mark (car range))
+          (goto-char (nth 1 range)))
+        (setq deactivate-mark nil)
+        (mouse-set-region-1)
+        (when mouse-drag-copy-region
+          ;; Region already copied to kill-ring once, so replace.
+          ;; FIX: only replace when the EXTRACTED text is non-empty (see the
+          ;; third-branch note); otherwise a stripped/empty extraction does
+          ;; (kill-new "" t) and clobbers the ring top.
+          (let ((s (funcall region-extract-function nil)))
+            (when (> (length s) 0)
+              (kill-new s t))))
+        ;; Arrange for a repeated mouse-3 to kill the region.
+        (setq mouse-save-then-kill-posn click-pt)))
+
+     ;; Otherwise, set the mark where point is and move to CLICK-PT.
+     (t
+      (select-window window)
+      (mouse-set-mark-fast click)
+      (let ((before-scroll (with-current-buffer buf point-before-scroll)))
+        (if before-scroll (goto-char before-scroll)))
+      (exchange-point-and-mark)
+      (mouse-set-region-1)
+      (when mouse-drag-copy-region
+        ;; FIX: upstream's guard here is `(not (/= (mark t) (point)))', which is
+        ;; inverted (copies only when EMPTY).  But even the position test isn't
+        ;; enough: buffers whose `filter-buffer-substring-function' strips
+        ;; invisible/overlay content (agent-shell; *Backtrace* via
+        ;; `backtrace--filter-visible') return "" for a non-empty range, so
+        ;; guard on the EXTRACTED string being non-empty instead.
+        (let ((s (filter-buffer-substring (mark t) (point))))
+          (when (> (length s) 0)
+            (kill-new s))))
+      (setq mouse-save-then-kill-posn click-pt)))))
+
+;; --------------------------------------------------------------------------
+;; FIX: backtrace--filter-visible returns "" for reversed ranges
+;; --------------------------------------------------------------------------
+;; Same bug as agent-shell's filter: as a `filter-buffer-substring-function' it
+;; must accept BEG/END in either order, but `(while (< beg end) ...)' returns ""
+;; when BEG > END -- so mouse copy from *Backtrace* silently yields nothing
+;; depending on selection direction.  Normalize with min/max.  `backtrace' is
+;; loaded on demand, so wrap in `with-eval-after-load' to win over the stock
+;; definition.  Remove once fixed upstream.
+(with-eval-after-load 'backtrace
+  (defun backtrace--filter-visible (beg end &optional _delete)
+    "Return the visible text between BEG and END."
+    (let ((beg (min beg end))
+          (end (max beg end))
+          (result ""))
+      (while (< beg end)
+        (let ((next (next-single-char-property-change beg 'invisible)))
+          (unless (get-char-property beg 'invisible)
+            (setq result (concat result (buffer-substring beg (min end next)))))
+          (setq beg next)))
+      result)))
