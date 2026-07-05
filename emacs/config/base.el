@@ -23,6 +23,9 @@
   (set-face-attribute 'mode-line nil :background "#3FB6ED" :foreground "#ffffff" :box nil :height 110)
   (set-face-attribute 'mode-line-inactive nil :background "#44475a" :foreground "#8B8B8B" :box nil :height 110)
 
+  (set-face-attribute 'company-tooltip-selection nil
+                      :background "#f1fa8c" :foreground "#282a36")
+
   (set-face-attribute 'isearch nil :background nil :foreground "#f1fa8c" :weight 'bold :underline t)
   (set-face-attribute 'lazy-highlight nil :background nil :foreground "#bd93f9" :underline t)
   (set-face-attribute 'match nil :background nil :foreground "#f1fa8c" :weight 'bold)
