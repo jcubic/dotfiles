@@ -94,6 +94,7 @@
 ;; --------------------------------------------------------------------------
 ;; :: AGENT-SHELL TURN-COMPLETE NOTIFICATION
 ;; --------------------------------------------------------------------------
+(setq agent-shell--debug nil)
 
 (defun agent-shell--buffer-focused-p (buffer)
   "Return non-nil if BUFFER is visible in the frame that has input focus.
@@ -379,7 +380,8 @@ auto-approves."
            (kind (map-elt tool-call :kind))
            (title (or (map-elt tool-call :title) ""))
            (cwd (agent-shell-cwd))
-           (_ (message "Permission check: kind=%s title=%s cwd=%s" kind title cwd))
+           (_ (if agent-shell--debug
+                  (message "Permission check: kind=%s title=%s cwd=%s" kind title cwd)))
            (allow-choice (seq-find
                           (lambda (opt)
                             (equal (map-elt opt :kind) "allow_once"))
