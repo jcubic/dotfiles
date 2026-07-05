@@ -200,10 +200,6 @@
 ;; --------------------------------------------------------------------------
 (setq x-select-enable-clipboard t)
 (setq kill-read-only-ok t)
-
-;; 'non-empty (not t) so empty/degenerate drags & right-clicks don't push ""
-;; onto the kill ring.  Requires the mouse-save-then-kill redefinition at the
-;; end of this file (upstream's non-empty guard for right-click is inverted).
 (setq mouse-drag-copy-region 'non-empty)
 (setq x-select-enable-clipboard-manager nil)
 
