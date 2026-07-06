@@ -21,6 +21,8 @@
 	empty = commit --allow-empty --allow-empty-message -m \"\"
 	same = commit --amend --no-edit
 	first = !git log -1 $(git rev-list --max-parents=0 HEAD)
+	new-tree = "!f() { git worktree add -b \"$1\" \"../$1\" HEAD; }; f"
+	rm-tree = "!f() { git worktree remove \"$1\" && git branch -D \"$1\"; }; f"
 [push]
 	default = current
 	autoSetupRemote = true
