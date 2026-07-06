@@ -1,0 +1,155 @@
+#!/bin/bash
+
+# Script to add delay to the microhpnes on Linux
+
+parse_sources() {
+    LANG=C pactl -f json list sources 2>/dev/null | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for s in data:
+    name = s.get('name', '')
+    desc = s.get('description', '')
+    is_monitor = '.monitor' in name
+    is_delay = name.startswith('delay_')
+    print(f'{is_monitor}\t{is_delay}\t{name}\t{desc}')
+"
+}
+
+show_list() {
+    local sources
+    sources=$(parse_sources)
+
+    echo "=== Real Microphones Available ==="
+    local real
+    real=$(echo "$sources" | awk -F'\t' '$1 == "False" && $2 == "False" { print $3 "\t" $4 }')
+    if [ -z "$real" ]; then
+        echo "  (No real microphones found)"
+    else
+        echo "$real" | while IFS=$'\t' read -r name desc; do
+            echo -e "  -> \033[1;32m$desc\033[0m  (keyword: $name)"
+        done
+    fi
+
+    echo ""
+    echo "=== Active Delayed Devices ==="
+    local delayed
+    delayed=$(echo "$sources" | awk -F'\t' '$2 == "True" { print $4 }')
+    if [ -z "$delayed" ]; then
+        echo "  (No active delayed devices running)"
+    else
+        echo "$delayed" | while read -r desc; do
+            echo -e "  -> Active: \033[1;34m$desc\033[0m"
+        done
+    fi
+}
+
+# 1. HANDLE 'list' COMMAND
+if [ "$1" == "list" ]; then
+    show_list
+    exit 0
+fi
+
+# 2. HANDLE 'stop' COMMAND
+if [ "$1" == "stop" ]; then
+    echo "=== Removing all delayed devices ==="
+    killall pw-loopback 2>/dev/null
+    echo "✅ System cleared. Real microphones are untouched."
+    exit 0
+fi
+
+# 3. HANDLE 'delete' COMMAND
+if [ "$1" == "delete" ]; then
+    if [ -z "$2" ]; then
+        echo "Error: Missing device name."
+        echo "Usage: delay delete <name>"
+        echo "Use 'delay list' to see active delayed devices."
+        exit 1
+    fi
+    SEARCH="$2"
+    PID=$(pgrep -af "pw-loopback" | grep -i "$SEARCH" | awk '{print $1}')
+    if [ -z "$PID" ]; then
+        echo "❌ No delayed device matching '$SEARCH' found."
+        exit 1
+    fi
+    kill $PID 2>/dev/null
+    echo "✅ Removed delayed device matching '$SEARCH'."
+    exit 0
+fi
+
+# 3. VALIDATE ARGUMENTS
+if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "Error: Missing arguments."
+    echo "Usage:"
+    echo "  ./delay <mic_keyword> <delay_in_ms> [custom_name]"
+    echo "  ./delay list"
+    echo "  ./delay delete <name>"
+    echo "  ./delay stop"
+    exit 1
+fi
+
+MIC_KEYWORD=$1
+DELAY_MS=$2
+CUSTOM_NAME=$3
+
+# Convert ms to seconds
+DELAY_SEC=$(awk -v ms="$DELAY_MS" 'BEGIN { printf "%.3f", ms / 1000 }')
+
+# Find full source name (search both internal name and description)
+FULL_SRC=$(LANG=C pactl -f json list sources 2>/dev/null | python3 -c "
+import json, sys
+keyword = sys.argv[1].lower()
+data = json.load(sys.stdin)
+for s in data:
+    name = s.get('name', '')
+    desc = s.get('description', '')
+    if '.monitor' in name or name.startswith('delay_'):
+        continue
+    if keyword in name.lower() or keyword in desc.lower():
+        print(name)
+        break
+" "$MIC_KEYWORD")
+
+if [ -z "$FULL_SRC" ]; then
+    echo "❌ Error: Microphone matching '$MIC_KEYWORD' not found."
+    exit 1
+fi
+
+# GENERATE CLEAN NAME WITH SUFFIX
+SUFFIX=" (${DELAY_MS}ms)"
+
+if [ ! -z "$CUSTOM_NAME" ]; then
+    DISPLAY_NAME="${CUSTOM_NAME}${SUFFIX}"
+fi
+
+NODE_IDENTIFIER="delay_${MIC_KEYWORD}"
+
+# If no custom name was specified, generate the clean auto-name now
+if [ -z "$CUSTOM_NAME" ]; then
+    CLEAN_NAME=$(echo "$FULL_SRC" | sed -E 's/^alsa_input\.//; s/^usb-//; s/\.(analog-stereo|mono-fallback|stereo|mono)$//; s/_[0-9A-Z]{8,}.*//; s/_/ /g')
+    DISPLAY_NAME="${CLEAN_NAME}${SUFFIX}"
+fi
+
+# Restart if already running for this keyword
+OLD_PID=$(pgrep -f "node.name=$NODE_IDENTIFIER")
+if [ ! -z "$OLD_PID" ]; then
+    echo "Updating settings for $MIC_KEYWORD..."
+    kill "$OLD_PID" 2>/dev/null
+    sleep 0.2
+fi
+
+echo "=== Configuring Device ==="
+echo "Target Hardware: $FULL_SRC"
+echo "Meet Label:      $DISPLAY_NAME"
+
+# Launch pw-loopback
+pw-loopback \
+    -C "$FULL_SRC" \
+    -d "$DELAY_SEC" \
+    --playback-props="media.class=Audio/Source node.name=\"$NODE_IDENTIFIER\" node.description=\"$DISPLAY_NAME\"" &
+
+if [ $? -eq 0 ]; then
+    echo "✅ Success!"
+    echo "Select '$DISPLAY_NAME' in Google Meet."
+else
+    echo "❌ Failed to create device."
+fi
