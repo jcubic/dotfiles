@@ -11,10 +11,7 @@ clone the repo
 Add below to your ~/.bashrc
 
 ```bash
-. ~/path/dotfiles/bash/aliases
-. ~/path/dotfiles/bash/less
-. ~/path/dotfiles/bash/functions
-. ~/path/dotfiles/bash/variables
+. ~/path/dotfiles/bash/init
 
 singleline_prompt
 ```

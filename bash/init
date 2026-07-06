@@ -1,0 +1,10 @@
+_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+export PATH="$_DIR/../bin:$PATH"
+
+. "$_DIR/aliases"
+. "$_DIR/less"
+. "$_DIR/functions"
+. "$_DIR/variables"
+
+unset _DIR

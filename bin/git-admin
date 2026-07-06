@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ -z "$1" ] || [ -z "$2" ]
+then
+  echo -e "usage:\n  git-admin <user|org> <repo>"
+  exit 1
+else
+  gh api /repos/$1/$2/collaborators | \
+     jq '[ .[] | select(.permissions.admin == true) | .login ]'
+fi
+
