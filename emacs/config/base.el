@@ -30,7 +30,7 @@
   (set-face-attribute 'lazy-highlight nil :background nil :foreground "#bd93f9" :underline t)
   (set-face-attribute 'match nil :background nil :foreground "#f1fa8c" :weight 'bold)
 
-  (set-face-attribute 'show-paren-match nil :background "#ff8c00" :foreground "black" :weight 'bold)
+  (set-face-attribute 'show-paren-match nil :background "#3fb6ed" :foreground "white" :weight 'bold)
 
   (set-face-attribute 'minibuffer-prompt nil :background nil :foreground "#f1fa8c" :weight 'bold)
   (set-face-attribute 'minibuffer-prompt nil :box nil))
