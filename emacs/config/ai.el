@@ -68,7 +68,29 @@
 
 (add-hook 'agent-shell-mode-hook 'agent-shell-hook)
 
+;; --------------------------------------------------------------------------
+;; :: COMPLETION
+;; --------------------------------------------------------------------------
+;; company setup
+(defun agent-shell-company-trigger ()
+  "Open company on @ or / at a word boundary, like corfu does."
+  (when (and (memq (char-before) '(?@ ?/))
+             (or (= (point) (1+ (line-beginning-position)))
+                 (memq (char-before (1- (point))) '(?\s ?\t ?\n))))
+    ;; manual begin ignores min-prefix, so @ alone pops
+    (company-manual-begin)))
 
+(defun agent-shell-company-setup ()
+  (when agent-shell-completion-mode
+    (setq-local company-backends '(company-capf))
+    (setq-local company-idle-delay 0.1)
+    (setq-local company-minimum-prefix-length 3)
+    (company-mode 1)
+    ;; replace agent-shell's completion-at-point trigger with a company one
+    (remove-hook 'post-self-insert-hook #'agent-shell--trigger-completion-at-point t)
+    (add-hook 'post-self-insert-hook #'agent-shell-company-trigger nil t)))
+
+(add-hook 'agent-shell-completion-mode-hook #'agent-shell-company-setup)
 
 ;; --------------------------------------------------------------------------
 ;; FIX THINKING
