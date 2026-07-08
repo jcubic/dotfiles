@@ -11,6 +11,9 @@
     (setq alt-languagetool-url "https://api.languagetool.org"))
 
 (setq alt-correct-style 'company)
+(setq alt-company-remove-label "[remove duplicate]")
+
+(setq poly-markdown-enable-latex-math nil)
 
 (defun markdown ()
   (interactive)
