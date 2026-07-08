@@ -16,5 +16,8 @@
 
       (setq auth-sources '("~/.authinfo.gpg"))
 
-      (setq message-default-mail-headers
-            (concat "Bcc: " SMTP_EMAIL "\n" message-default-mail-headers))))
+      (let ((bcc (concat "Bcc: " SMTP_EMAIL "\n")))
+        (if (boundp 'message-default-mail-headers)
+            (setq message-default-mail-headers
+                  (concat bcc message-default-mail-headers))
+          (setq message-default-mail-headers bcc)))))
