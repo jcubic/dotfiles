@@ -485,7 +485,10 @@ auto-approves."
          (env . nil))
         ((name . "playwright")
          (command . "playwright-mcp")
-         (args . ("--name" "Playwright-Headless" "--config" ,(expand-file-name "~/projects/jcubic/dotfiles/emacs/playwright-mcp.json")))
+         (args . ("--name"
+                  "Playwright-Headless"
+                  "--config"
+                  ,(expand-file-name "~/projects/jcubic/dotfiles/emacs/playwright-mcp.json")))
          (env . nil))
         ((name . "playwright-browser")
          (command . "playwright-mcp")
