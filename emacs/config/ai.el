@@ -543,6 +543,10 @@ auto-approves."
         ((name . "wikidata")
          (type . "http")
          (url . "https://wd-mcp.wmcloud.org/mcp/")
+         (headers . nil))
+        ((name . "specification-website")
+         (type . "http")
+         (url . "https://mcp.specification.website/mcp")
          (headers . nil))))
 
 (setq agent-shell-permission-responder-function
