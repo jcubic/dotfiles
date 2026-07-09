@@ -83,7 +83,7 @@
 (defun agent-shell-company-setup ()
   (when agent-shell-completion-mode
     (setq-local company-backends '(company-capf))
-    (setq-local company-idle-delay 0.1)
+    (setq-local company-idle-delay nil)
     (setq-local company-minimum-prefix-length 3)
     (company-mode 1)
     ;; replace agent-shell's completion-at-point trigger with a company one
