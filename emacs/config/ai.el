@@ -114,6 +114,30 @@
    '((name . agent-shell/summarized-thinking))))
 
 ;; --------------------------------------------------------------------------
+;; :: MOUSE FIX
+;; --------------------------------------------------------------------------
+;; `agent-shell--filter-buffer-substring' walks the range with
+;; `(while (< pos end) ...)'.  When START > END -- a right-to-left mouse
+;; selection, or a kill where mark > point -- the loop never runs and the
+;; function returns "", silently breaking mouse copy depending on selection
+;; direction.  Normalize the range in :filter-args so START <= END, matching
+;; stock `buffer-substring'.  (`delete-region' already handles either order.)
+;; Remove once the upstream fix (jcubic/agent-shell) is merged.
+
+(defun agent-shell--normalize-filter-range (args)
+  "Sort the START/END of ARGS so a reversed range is not dropped."
+  (let ((start (nth 0 args))
+        (end   (nth 1 args))
+        (rest  (cddr args)))          ; preserve optional DELETE as-is
+    (append (list (min start end) (max start end)) rest)))
+
+(with-eval-after-load 'agent-shell
+  (advice-add
+   'agent-shell--filter-buffer-substring :filter-args
+   'agent-shell--normalize-filter-range
+   '((name . agent-shell/normalize-filter-range))))
+
+;; --------------------------------------------------------------------------
 ;; :: AGENT-SHELL TURN-COMPLETE NOTIFICATION
 ;; --------------------------------------------------------------------------
 (setq agent-shell--debug nil)
