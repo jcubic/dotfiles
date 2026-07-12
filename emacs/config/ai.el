@@ -48,18 +48,23 @@
 ;; --------------------------------------------------------------------------
 ;; :: AGENT-SHELL INIT FUNCTIONS
 ;; --------------------------------------------------------------------------
-
 (defun run-agent (dir)
-  (let ((default-directory (file-name-as-directory (expand-file-name dir))))
+  "Function that runs agent-shell with a given directory"
+  (let ((default-directory
+         (file-name-as-directory (expand-file-name dir))))
     (agent-shell '(4))))
 
-(defmacro agent (fn-name)
-  (let* ((name (symbol-name fn-name))
-         (config (cond ((string-equal name "claude") '(agent-shell-anthropic-make-claude-code-config))
-                       ((string-equal name "opencode") '(agent-shell-opencode-make-agent-config))
+(defmacro agent (symbol)
+  "Macro that create Agent-Shell runner function"
+  (let* ((name (symbol-name symbol))
+         (config (cond ((string-equal name "claude")
+                        '(agent-shell-anthropic-make-claude-code-config))
+                       ((string-equal name "opencode")
+                        '(agent-shell-opencode-make-agent-config))
                        (t (error (concat "wrong name: " name))))))
-    `(defun ,fn-name (dir)
-       (interactive (list (read-directory-name "Directory: " default-directory nil t)))
+    `(defun ,symbol (dir)
+       ,(concat "Function that run Agent-Shell with " name " ACP")
+       (interactive "DDirectory: ")
        (let ((agent-shell-preferred-agent-config ,config))
          (run-agent dir)))))
 
