@@ -35,12 +35,6 @@
 (setq agent-shell-opencode-authentication
       (agent-shell-opencode-make-authentication :none t))
 
-(setq agent-shell-preferred-agent-config
-      (agent-shell-anthropic-make-claude-code-config))
-
-;; (setq agent-shell-preferred-agent-config
-;;       (agent-shell-opencode-make-agent-config))
-
 (setq agent-shell-markdown-render-function #'agent-shell-markdown-replace-markup)
 (setq agent-shell-highlight-blocks t)
 
@@ -51,12 +45,30 @@
 (setq acp-logging-enabled t)
 (setq agent-shell-session-strategy 'prompt)
 
-(defun claude (dir)
-  "Start a new Agent Shell session in DIR."
-  (interactive (list (read-directory-name "Directory: " default-directory nil t)))
+;; --------------------------------------------------------------------------
+;; :: AGENT-SHELL INIT FUNCTIONS
+;; --------------------------------------------------------------------------
+
+(defun run-agent (dir)
   (let ((default-directory (file-name-as-directory (expand-file-name dir))))
     (agent-shell '(4))))
 
+(defmacro agent (fn-name)
+  (let* ((name (symbol-name fn-name))
+         (config (cond ((string-equal name "claude") '(agent-shell-anthropic-make-claude-code-config))
+                       ((string-equal name "opencode") '(agent-shell-opencode-make-agent-config))
+                       (t (error (concat "wrong name: " name))))))
+    `(defun ,fn-name (dir)
+       (interactive (list (read-directory-name "Directory: " default-directory nil t)))
+       (let ((agent-shell-preferred-agent-config ,config))
+         (run-agent dir)))))
+
+(agent claude)
+(agent opencode)
+
+;; --------------------------------------------------------------------------
+;; :: KEYBINDING
+;; --------------------------------------------------------------------------
 (defun agent-shell-hook ()
   "Set up key bindings for `agent-shell-mode' buffers."
   (interactive)
