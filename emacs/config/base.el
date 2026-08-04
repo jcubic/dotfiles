@@ -368,3 +368,17 @@ if `mouse-drag-copy-region' is non-nil)."
             (setq result (concat result (buffer-substring beg (min end next)))))
           (setq beg next)))
       result)))
+
+;; --------------------------------------------------------------------------
+;; Exit emacs or close frame
+;; --------------------------------------------------------------------------
+
+(setq confirm-kill-emacs t)
+
+(defun close-emacs ()
+  (interactive)
+  (if (> (length (frame-list)) 1)
+      (delete-frame)
+    (save-buffers-kill-emacs)))
+
+(global-set-key (kbd "C-x C-c") 'close-emacs)
