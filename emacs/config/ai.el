@@ -583,14 +583,14 @@ auto-approves."
           (execute . ("*"
                       "git checkout *" "git status *" "git diff *"
                       "git clone *" "git ls-tree *" "git ls-files *"
-                      "git log *" "git show *" "git branch *"
+                      "git log *" "git show *" "git branch *" "git ls-remote"
                       "git reflog *" "git rev-parse *" "git remote -v *"
                       "git config *" "git grep *"))
           (mcp . ("*"))
           (fetch . ("*")))
          (deny
-          (execute . ("node -e *" "python -c *" "bash -c *" "sh -c *")))
+          (execute . ()))
          (ask
-          (execute . ("sudo *" "ssh *" "git *" "kill *" "emacsclient *" "emacs-version"
-                      "bash" "bash *" "sh" "sh *"))
+          (execute . ("sudo *" "ssh *" "git *" "kill *" "emacsclient *"
+                      "node -e *" "python -c *" "bash -c *" "sh -c *"))
           (mcp . ("playwright-browser"))))))
