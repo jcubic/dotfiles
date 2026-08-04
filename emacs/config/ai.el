@@ -113,22 +113,23 @@
 ;; FIX THINKING
 ;; --------------------------------------------------------------------------
 ;; temporary hack to enable Claude Code thinking
-
-(defun add-acp-config (args)
-  (if (plist-member args :meta)
-      args
-    (append args
-            '(:meta ((claudeCode
-                      . ((options
-                          . ((thinking
-                              . ((type . "adaptive")
-                                 (display . "summarized"))))))))))))
-
-(with-eval-after-load 'acp
-  (advice-add
-   'acp-make-session-new-request :filter-args
-   'add-acp-config
-   '((name . agent-shell/summarized-thinking))))
+;; (defun add-acp-config (args)
+;;   (if (plist-member args :meta)
+;;       args
+;;     (append args
+;;             '(:meta ((claudeCode
+;;                       . ((options
+;;                           . ((thinking
+;;                               . ((type . "adaptive")
+;;                                  (display . "summarized"))))))))))))
+;;
+;; (with-eval-after-load 'acp
+;;   (advice-add
+;;    'acp-make-session-new-request :filter-args
+;;    'add-acp-config
+;;    '((name . agent-shell/summarized-thinking))))
+;;
+;; (advice-remove 'acp-make-session-new-request 'add-acp-config)
 
 ;; --------------------------------------------------------------------------
 ;; :: MOUSE FIX
