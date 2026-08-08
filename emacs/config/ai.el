@@ -520,17 +520,28 @@ auto-approves."
 ;; --------------------------------------------------------------------------
 ;; :: AGENT-SHELL CONFIG
 ;; --------------------------------------------------------------------------
+(defmacro maybe-var (var)
+  `(if (boundp ',var) ,var ""))
+
 (setq agent-shell-mcp-servers
       `(((name . "context7")
          (type . "http")
          (url . "https://mcp.context7.com/mcp")
          (headers . (((name . "CONTEXT7_API_KEY")
-                      (value . ,(if (boundp 'CONTEXT_7_API_KEY) CONTEXT_7_API_KEY ""))))))
+                      (value . ,(maybe-var CONTEXT_7_API_KEY))))))
         ((name . "brave-search")
          (command . "npx")
          (args . ("-y" "@brave/brave-search-mcp-server"))
          (env . (((name . "BRAVE_API_KEY")
-                  (value . ,(if (boundp 'BRAVE_SEARCH_API_KEY) BRAVE_SEARCH_API_KEY ""))))))
+                  (value . ,(maybe-var BRAVE_SEARCH_API_KEY))))))
+        ((name . "browserstack")
+         (command . "npx")
+         (args . ("-y"  "@browserstack/mcp-server@latest"))
+         (url . "https://mcp.browserstack.com/mcp")
+         (env . (((name . "BROWSERSTACK_USERNAME")
+                  (value . ,(maybe-var BROWSER_STACK_USERNAME)))
+                 ((name . "BROWSERSTACK_ACCESS_KEY")
+                  (value . ,(maybe-var BROWSER_STACK_ACCESS_KEY))))))
         ((name . "DeepWiki")
          (type . "http")
          (url . "https://mcp.deepwiki.com/mcp")
