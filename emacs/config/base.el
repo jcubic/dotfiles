@@ -394,3 +394,18 @@ if `mouse-drag-copy-region' is non-nil)."
   (kill-new buffer-file-name))
 
 (global-set-key (kbd "C-c p") 'copy-file-name)
+
+;; --------------------------------------------------------------------------
+;; Kill buffer when process ends
+;; --------------------------------------------------------------------------
+
+(defun kill-when-proc-ends ()
+  "Function kills the buffer when process assigned to the buffer exit"
+  (interactive)
+  (let* ((buff (current-buffer))
+         (proc (get-buffer-process buff)))
+    (lexical-let ((buff buff))
+      (set-process-sentinel proc
+                            (lambda (process event)
+                              (unless (process-live-p process)
+                                (kill-buffer buff)))))))

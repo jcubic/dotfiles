@@ -60,13 +60,7 @@
   (term-color magenta "#FF55FF")
   (term-color cyan "#FF55FF")
   (term-color yellow "#FFFF55")
-  (let* ((buff (current-buffer))
-         (proc (get-buffer-process buff)))
-    (lexical-let ((buff buff))
-      (set-process-sentinel proc
-                            (lambda (process event)
-                              (unless (process-live-p process)
-                                (kill-buffer buff)))))))
+  (kill-when-proc-ends))
 
 (add-hook 'term-exec-hook 'term-exec-handler)
 
@@ -163,3 +157,13 @@
   (interactive)
   (setenv "NODE_NO_READLINE" "1") ;avoid fancy terminal codes
   (pop-to-buffer (make-comint "node-repl" "node" nil "--interactive")))
+
+
+;; --------------------------------------------------------------------------
+
+(defun fix-commit-output (output)
+  (replace-regexp-in-string "\033\\[[0-9]+[GK]" "." output))
+
+(defun insert-control-character (str)
+  (interactive "sInsert Raw: ")
+  (insert (read-kbd-macro str)))
