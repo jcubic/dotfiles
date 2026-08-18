@@ -4,7 +4,9 @@
 (setq scheme-program-name "/home/kuba/projects/jcubic/scheme/lips/master/bin/lips.js")
 (add-hook 'scheme-mode-hook 'turn-on-font-lock)
 
-;; -- multiple named Scheme REPLs --------------------------------------------
+;; --------------------------------------------------------------------------
+;; MULTIPLE NAMED SCHEME REPLS
+;; --------------------------------------------------------------------------
 ;; Run each interpreter in its own *scheme<NAME>* buffer so several REPLs can
 ;; live at the same time.  When you evaluate from a scheme-mode buffer the
 ;; target is the REPL that is *visible in the selected frame* (see the
