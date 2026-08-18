@@ -373,7 +373,7 @@ if `mouse-drag-copy-region' is non-nil)."
 ;; Exit emacs or close frame
 ;; --------------------------------------------------------------------------
 
-(setq confirm-kill-emacs t)
+(setq confirm-kill-emacs 'yes-or-no-p)
 
 (defun close-emacs ()
   (interactive)
