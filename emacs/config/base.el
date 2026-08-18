@@ -382,3 +382,15 @@ if `mouse-drag-copy-region' is non-nil)."
     (save-buffers-kill-emacs)))
 
 (global-set-key (kbd "C-x C-c") 'close-emacs)
+
+
+;; --------------------------------------------------------------------------
+;; copy file name to kill-ring (clipboard)
+;; --------------------------------------------------------------------------
+
+(defun copy-file-name ()
+  (interactive)
+  (message buffer-file-name)
+  (kill-new buffer-file-name))
+
+(global-set-key (kbd "C-c p") 'copy-file-name)
