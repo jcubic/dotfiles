@@ -112,6 +112,7 @@ appended right after the current prompt (e.g. `lips> lips>')."
 (define-key inferior-scheme-mode-map (kbd "RET") #'comint-send-input-indent)
 
 (defun inferior-scheme ()
+  (kill-when-proc-ends)
   (setq show-trailing-whitespace nil))
 
 (add-hook 'inferior-scheme-mode-hook #'inferior-scheme)
