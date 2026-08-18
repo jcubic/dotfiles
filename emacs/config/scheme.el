@@ -4,40 +4,85 @@
 (setq scheme-program-name "/home/kuba/projects/jcubic/scheme/lips/master/bin/lips.js")
 (add-hook 'scheme-mode-hook 'turn-on-font-lock)
 
+;; -- multiple named Scheme REPLs --------------------------------------------
+;; Run each interpreter in its own *scheme<NAME>* buffer so several REPLs can
+;; live at the same time.  When you evaluate from a scheme-mode buffer the
+;; target is the REPL that is *visible in the selected frame* (see the
+;; `scheme-proc' advice below); if none is visible it falls back to
+;; `scheme-buffer', the most recently started REPL.
+
+(defun run-scheme-named (name cmd)
+  "Run inferior Scheme CMD in its own buffer named *scheme<NAME>*.
+Like `run-scheme', but several REPLs can coexist.  With a prefix
+argument, edit the command line before running it."
+  (interactive
+   (list (read-string "REPL name: ")
+         (if current-prefix-arg
+             (read-string "Run Scheme: " scheme-program-name)
+           scheme-program-name)))
+  (let ((bufname (format "*scheme<%s>*" name)))
+    (unless (comint-check-proc bufname)
+      (let ((cmdlist (split-string-and-unquote cmd)))
+        (set-buffer (apply #'make-comint (format "scheme<%s>" name)
+                           (car cmdlist)
+                           (scheme-start-file (car cmdlist))
+                           (cdr cmdlist)))
+        (inferior-scheme-mode)))
+    (setq scheme-program-name cmd
+          scheme-buffer bufname)
+    (pop-to-buffer-same-window bufname)))
+
+(defun scheme-visible-repl-buffer ()
+  "Return a live inferior-scheme REPL buffer shown in the selected frame, or nil.
+If several are visible the first one in window order wins."
+  (catch 'found
+    (dolist (win (window-list (selected-frame) 'nomini))
+      (let ((buf (window-buffer win)))
+        (when (and (buffer-live-p buf)
+                   (eq (buffer-local-value 'major-mode buf) 'inferior-scheme-mode)
+                   (get-buffer-process buf))
+          (throw 'found buf))))))
+
+(defun scheme-proc--prefer-visible (orig &rest args)
+  "Target the REPL visible in the selected frame when evaluating from source.
+Advice around `scheme-proc': in a non-REPL buffer, if a REPL window is
+showing in the current frame, evaluate into it; otherwise behave as usual."
+  (let* ((repl (and (not (eq major-mode 'inferior-scheme-mode))
+                    (scheme-visible-repl-buffer)))
+         (scheme-buffer (if repl (buffer-name repl) scheme-buffer)))
+    (apply orig args)))
+
+(advice-add 'scheme-proc :around #'scheme-proc--prefer-visible)
+
 (defun lisp ()
   "call run-lisp with clisp intepreter."
   (interactive)
   (run-lisp "/usr/bin/clisp -q"))
 
-(defun scheme ()
-  "call run-scheme with mit scheme interpreter."
-  (interactive)
-  (run-scheme "/usr/bin/guile3.0"))
-
 (defun kawa ()
-  "call run-scheme with kawa scheme interpreter."
+  "Run kawa in *scheme<kawa>*."
   (interactive)
-  (run-scheme "/usr/bin/kawa"))
+  (run-scheme-named "kawa" "/usr/bin/kawa"))
 
 (defun chicken ()
-  "call run-scheme with Chicken interpreter."
+  "Run Chicken (csi) in *scheme<chicken>*."
   (interactive)
-  (run-scheme "/usr/bin/csi"))
+  (run-scheme-named "chicken" "/usr/bin/csi"))
 
 (defun guile ()
-  "call run-scheme with guile interpreter."
+  "Run guile in *scheme<guile>*."
   (interactive)
-  (run-scheme "/usr/bin/guile3.0"))
+  (run-scheme-named "guile" "/usr/bin/guile3.0"))
 
 (defun lips ()
-  "call run-scheme with LIPS interpreter."
+  "Run LIPS in *scheme<lips>*."
   (interactive)
-  (run-scheme "/usr/bin/env lips -q"))
+  (run-scheme-named "lips" "/usr/bin/env lips -q"))
 
 (defun gambit ()
-  "call run-scheme with guile interpreter."
+  "Run Gambit (gsi) in *scheme<gambit>*."
   (interactive)
-  (run-scheme "/usr/bin/env gsi"))
+  (run-scheme-named "gambit" "/usr/bin/env gsi"))
 
 (defun my-scheme-send-newline (&rest _)
   "Terminate the current line in the inferior Scheme buffer before a
