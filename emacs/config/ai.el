@@ -203,6 +203,78 @@ announced directory is the session CWD (the DIR passed to `claude')."
 ;; :: AGENT-SHELL PERMISSION SYSTEM
 ;; --------------------------------------------------------------------------
 
+;; ---- Quote-aware shell tokenizer -----------------------------------------
+;;
+;; The path-extraction and compound-split helpers below used to lean on naive
+;; `split-string', which is blind to shell quoting.  A command such as
+;;   sed -E 's/\x1b\[[0-9;]*m//g; s|https?://[^ ]*||g; s/^[0-9T:.Z-]+ //'
+;; made them emit stray "paths" (e.g. the //' fragment of the sed script) and
+;; forced a permission prompt for an otherwise-allowed command.  These helpers
+;; instead parse the command the way a shell does: quotes group, backslash
+;; escapes, and heredoc bodies are opaque -- so regex/URL/path-looking text
+;; inside quotes or heredocs is never mistaken for a real argument.
+;;
+;; `agent-shell--shell-token-re' and `agent-shell--shell-quoted-re' are
+;; generated from the jQuery Terminal command tokenizer by regex2elisp.js in
+;; the dotfiles repo root; regenerate with `node regex2elisp.js' rather than
+;; hand-editing them.  Emacs regexps have no lookahead, so the original's
+;; `/regex/' literal branch is intentionally omitted: in POSIX shell an
+;; unquoted space always separates arguments, so a bare /foo bar/ is not a
+;; single token anyway.  Heredocs are handled by a separate strip pass instead
+;; of a token-regex branch, because a heredoc terminator is line-anchored and
+;; back-referenced -- folding that into the token regex risks catastrophic
+;; backtracking in Emacs's engine.
+
+(defconst agent-shell--shell-token-re
+  "\\(?:\"[^\"\\\\]*\\(?:\\\\\\(?:.\\|\n\\)[^\"\\\\]*\\)*\"\\|'[^'\\\\]*\\(?:\\\\\\(?:.\\|\n\\)[^'\\\\]*\\)*'\\|`[^`\\\\]*\\(?:\\\\\\(?:.\\|\n\\)[^`\\\\]*\\)*`\\|\\(?:\\\\[[:space:]]\\|[^[:space:]]\\)\\)+"
+  "Match a single shell token.
+Either a quoted string (\"...\", '...', `...`) or a run of
+backslash-escaped-space / non-space characters.")
+
+(defconst agent-shell--shell-quoted-re
+  "\\(?:\"[^\"\\\\]*\\(?:\\\\\\(?:.\\|\n\\)[^\"\\\\]*\\)*\"\\|'[^'\\\\]*\\(?:\\\\\\(?:.\\|\n\\)[^'\\\\]*\\)*'\\|`[^`\\\\]*\\(?:\\\\\\(?:.\\|\n\\)[^`\\\\]*\\)*`\\)"
+  "Match a single double-, single-, or back-quoted string.")
+
+(defconst agent-shell--heredoc-re
+  (concat "<<-?[ \t]*['\"]?"               ; << , optional - , spaces, open quote
+          "\\([A-Za-z_][A-Za-z0-9_]*\\)"   ; group 1: delimiter word
+          "['\"]?[^\n]*"                   ; close quote + rest of the operator line
+          "\n\\(?:.\\|\n\\)*?"             ; body (any char incl. newline, lazy)
+          "\n[ \t]*\\1[ \t]*$")            ; terminator line = delimiter word
+  "Match a heredoc from its `<<' operator through the terminator line.")
+
+(defun agent-shell--strip-heredocs (command)
+  "Remove heredoc bodies and terminator lines from COMMAND.
+The `<<DELIM' operator and the rest of its line are kept; the body and
+the terminator line are dropped so their opaque contents are not parsed
+as shell paths or sub-commands.  An unterminated heredoc is left as-is."
+  (replace-regexp-in-string
+   agent-shell--heredoc-re
+   (lambda (m) (save-match-data (substring m 0 (string-match "\n" m))))
+   command t t))
+
+(defun agent-shell--tokenize-command (command)
+  "Split COMMAND into shell tokens, quote-aware.
+Heredoc bodies are stripped first; quoted strings stay intact as single
+tokens."
+  (let ((str (agent-shell--strip-heredocs command))
+        (re (concat "[[:space:]]*\\(" agent-shell--shell-token-re "\\)"))
+        (start 0) tokens)
+    (while (and (< start (length str))
+                (string-match re str start))
+      (push (match-string 1 str) tokens)
+      (setq start (match-end 0)))
+    (nreverse tokens)))
+
+(defun agent-shell--mask-quoted (command)
+  "Replace quoted spans in COMMAND with equal-length filler.
+Length and offsets are preserved, so separators inside quotes vanish
+while positions into COMMAND stay valid for slicing."
+  (replace-regexp-in-string
+   agent-shell--shell-quoted-re
+   (lambda (m) (save-match-data (make-string (length m) ?x)))
+   command t t))
+
 (defun agent-shell--permission-path-match-p (path patterns cwd)
   "Return non-nil if PATH matches any of PATTERNS.
 `/' means the session CWD, `//' prefix means literal root path,
@@ -254,8 +326,24 @@ Git commands with -C <path> are normalized before matching."
      patterns)))
 
 (defun agent-shell--split-compound-command (command)
-  "Split a compound COMMAND into individual sub-commands."
-  (split-string command "[;|&]+" t "[ \t]+"))
+  "Split a compound COMMAND into individual sub-commands.
+Splits on `;', `&&', `||', `|' and `&' that fall outside quotes and
+heredoc bodies, so separators inside quoted arguments (regex alternation,
+sed scripts) do not create spurious sub-commands."
+  (let* ((stripped (agent-shell--strip-heredocs command))
+         (masked (agent-shell--mask-quoted stripped))
+         (start 0) (pos 0) subs)
+    (while (string-match "[;|&]+" masked pos)
+      ;; Capture the match bounds before `string-trim' -- it calls
+      ;; `string-match' internally and would clobber the match data,
+      ;; leaving `pos' stuck and looping forever.
+      (let ((mb (match-beginning 0)) (me (match-end 0)))
+        (let ((sub (string-trim (substring stripped start mb))))
+          (unless (zerop (length sub)) (push sub subs)))
+        (setq start me pos me)))
+    (let ((sub (string-trim (substring stripped start))))
+      (unless (zerop (length sub)) (push sub subs)))
+    (nreverse subs)))
 
 (defun agent-shell--permission-command-match-p (command patterns)
   "Return non-nil if any sub-command in COMMAND matches PATTERNS.
@@ -267,15 +355,20 @@ Splits compound commands on `;', `&&', `||', and `|'."
      sub-commands)))
 
 (defun agent-shell--extract-command-paths (command)
-  "Extract file path arguments from COMMAND string.
-Recognizes absolute paths, ~ paths, and relative paths."
+  "Extract file-path arguments from COMMAND string.
+Uses quote-aware tokenization so path-looking fragments inside quoted
+strings or heredoc bodies (regexes, URLs, sed scripts) are ignored.
+Recognizes absolute, ~, and explicit relative (./ ../) paths.  Tokens
+that are themselves quoted literals are skipped -- as before, only bare
+path arguments are checked."
   (let (paths)
-    (dolist (token (split-string command))
-      (when (or (string-prefix-p "/" token)
-                (string-prefix-p "~" token)
-                (string-prefix-p "./" token)
-                (string-prefix-p "../" token))
-        (push (expand-file-name token) paths)))
+    (dolist (token (agent-shell--tokenize-command command))
+      (unless (memq (aref token 0) '(?\" ?\' ?\`))
+        (when (or (string-prefix-p "/" token)
+                  (string-prefix-p "~" token)
+                  (string-prefix-p "./" token)
+                  (string-prefix-p "../" token))
+          (push (expand-file-name token) paths))))
     (nreverse paths)))
 
 (defun agent-shell--permission-paths-allowed-p (command permissions cwd)
@@ -537,7 +630,6 @@ auto-approves."
         ((name . "browserstack")
          (command . "npx")
          (args . ("-y"  "@browserstack/mcp-server@latest"))
-         (url . "https://mcp.browserstack.com/mcp")
          (env . (((name . "BROWSERSTACK_USERNAME")
                   (value . ,(maybe-var BROWSER_STACK_USERNAME)))
                  ((name . "BROWSERSTACK_ACCESS_KEY")
