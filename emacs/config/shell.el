@@ -135,3 +135,31 @@
 ;; --------------------------------------------------------------------------
 (ssh mydevil)
 (ssh toolforge)
+
+;; --------------------------------------------------------------------------
+;; HELPERS
+;; --------------------------------------------------------------------------
+(defun bash (dir)
+  "Start a bash shell in ansi-term in DIR, with DIR in the buffer name."
+  (interactive (list (read-directory-name "Directory: " default-directory)))
+  (let ((default-directory (file-name-as-directory (expand-file-name dir)))
+        (name (abbreviate-file-name (expand-file-name dir))))
+    (ansi-term "/bin/bash" (format "bash:%s" name))))
+
+(defun exec (cmd)
+  (interactive "MEnter command: ")
+  (insert-string (shell-command-to-string cmd)))
+
+;; --------------------------------------------------------------------------
+;; NODE.js use M-x run-js
+;; --------------------------------------------------------------------------
+(setq inferior-js-program-command "node --interactive")
+
+(defun js ()
+  (interactive)
+  (ansi-term "/usr/bin/env node"))
+
+(defun node ()
+  (interactive)
+  (setenv "NODE_NO_READLINE" "1") ;avoid fancy terminal codes
+  (pop-to-buffer (make-comint "node-repl" "node" nil "--interactive")))
