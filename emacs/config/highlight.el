@@ -63,6 +63,7 @@
                                 erc-mode
                                 fundamental-mode
                                 grep-mode
+                                completion-list-mode
                                 nodejs-repl-mode))
 
 (add-hook 'change-major-mode-hook
@@ -79,6 +80,7 @@
 (setq whitespace-mode-disable '(term-mode
                                 erc-mode
                                 shell-mode
+                                completion-list-mode
                                 nodejs-repl-mode
                                 vterm-mode))
 
