@@ -1,6 +1,4 @@
 (require 'cmuscheme)
-(autoload 'scheme-mode "cmuscheme" "Major mode for Scheme." t)
-(autoload 'run-scheme "cmuscheme" "Switch to interactive Scheme buffer." t)
 (setq scheme-program-name "/home/kuba/projects/jcubic/scheme/lips/master/bin/lips.js")
 (add-hook 'scheme-mode-hook 'turn-on-font-lock)
 
@@ -64,7 +62,7 @@ showing in the current frame, evaluate into it; otherwise behave as usual."
 (defun kawa ()
   "Run kawa in *scheme<kawa>*."
   (interactive)
-  (run-scheme-named "kawa" "/usr/bin/kawa"))
+  (run-scheme-named "kawa" "/usr/bin/env kawa"))
 
 (defun chicken ()
   "Run Chicken (csi) in *scheme<chicken>*."
@@ -79,29 +77,33 @@ showing in the current frame, evaluate into it; otherwise behave as usual."
 (defun lips ()
   "Run LIPS in *scheme<lips>*."
   (interactive)
-  (run-scheme-named "lips" "/usr/bin/env lips -q"))
+  (run-scheme-named "lips" "/home/kuba/projects/jcubic/scheme/lips/bin/lips.js -qjt"))
 
 (defun gambit ()
   "Run Gambit (gsi) in *scheme<gambit>*."
   (interactive)
   (run-scheme-named "gambit" "/usr/bin/env gsi"))
 
-(defun my-scheme-send-newline (&rest _)
-  "Terminate the current line in the inferior Scheme buffer before a
-buffer-send, so the next prompt lands on its own line instead of being
-appended right after the current prompt (e.g. `lips> lips>')."
-  (let ((proc (ignore-errors (scheme-proc))))
-    (when (and proc (process-live-p proc))
+
+(defun gosh ()
+  "Run Gambit (gsi) in *scheme<gambit>*."
+  (interactive)
+  (run-scheme-named "gauche" "/usr/bin/env gosh"))
+
+
+(with-eval-after-load 'cmuscheme
+  (defun scheme-send-region (start end)
+    "Send the current region to the inferior Scheme process."
+    (interactive "r")
+    (let ((proc (scheme-proc)))
       (with-current-buffer (process-buffer proc)
         (save-excursion
           (goto-char (process-mark proc))
-          ;; don't add a blank line if already at bol
           (unless (bolp)
             (let ((inhibit-read-only t))
-              ; ; moves process-mark past the newline
-              (insert-before-markers "\n"))))))))
-
-(advice-add 'scheme-send-region :before #'my-scheme-send-newline)
+              (insert-before-markers "\n")))))
+      (comint-send-region proc start end)
+      (comint-send-string proc "\n"))))
 
 (defun comint-send-input-indent ()
   (interactive)
