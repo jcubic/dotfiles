@@ -39,7 +39,12 @@
 
 (with-eval-after-load 'company
   (set-face-attribute 'company-tooltip-selection nil
-                      :background "#f1fa8c" :foreground "#282a36"))
+                      :background "#f1fa8c" :foreground "#282a36")
+  ;; dracula sets only :background on company-tooltip-mouse, so the foreground
+  ;; falls through from the row below it - on the selected row that means
+  ;; #282a36 on #282a36 and the text becomes invisible on hover.
+  (set-face-attribute 'company-tooltip-mouse nil
+                      :background "#6272a4" :foreground "#f8f8f2"))
 ;; --------------------------------------------------------------------------
 (require 'moody)
 (moody-replace-mode-line-front-space)
