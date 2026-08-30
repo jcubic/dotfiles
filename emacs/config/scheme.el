@@ -84,9 +84,13 @@ showing in the current frame, evaluate into it; otherwise behave as usual."
   (interactive)
   (run-scheme-named "gambit" "/usr/bin/env gsi"))
 
+(defun chibi ()
+  "Run chibi in *scheme<chibi>*."
+  (interactive)
+  (run-scheme-named "chibi" "/usr/bin/env chibi-scheme"))
 
 (defun gosh ()
-  "Run Gambit (gsi) in *scheme<gambit>*."
+  "Run Gauche in *scheme<gauche>*."
   (interactive)
   (run-scheme-named "gauche" "/usr/bin/env gosh"))
 
