@@ -53,7 +53,8 @@
 (add-hook 'shell-mode-hook 'hide-trailing-whitespace)
 (add-hook 'vterm-mode-hook 'hide-trailing-whitespace)
 (add-hook 'agent-shell-mode-hook 'hide-trailing-whitespace)
-
+(add-hook 'inferior-ess-mode-hook 'hide-trailing-whitespace)
+(add-hook 'ess-r-mode 'hide-trailing-whitespace)
 
 ;; Show Red tabs
 
